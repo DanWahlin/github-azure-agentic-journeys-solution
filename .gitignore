@@ -1,0 +1,110 @@
+# Azure Developer CLI
+.azure/
+
+# Compiled ARM templates (regenerated from Bicep)
+**/main.json
+.plans
+
+# Bicep parameters are tracked (use ${VAR} interpolation, no secrets)
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.json.example
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Environment variables
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# IDEs
+.claude/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.yarn/
+.pnp.*
+package-lock.json
+!/.github/skills/journey-runner/scripts/package-lock.json
+yarn.lock
+pnpm-lock.yaml
+dist/
+build/
+out/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.eslintcache
+
+# Frontend (Angular/React/Vue)
+.angular/
+.next/
+.nuxt/
+.output/
+.cache/
+.parcel-cache/
+.turbo/
+.svelte-kit/
+.vercel/
+storybook-static/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+target/
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.settings/
+.classpath
+.project
+hs_err_pid*
+replay_pid*
+
+# .NET
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rtifacts/
+*.nupkg
+*.snupkg
+project.lock.json
+*.nuget.props
+*.nuget.targets
+.nuget/
