@@ -1,0 +1,41 @@
+{
+  "createdUtc": "2026-07-17T07:41:29Z",
+  "sourceRepository": "/root/projects/github-azure-agentic-journeys",
+  "sourceCommit": "2ae5d9ca018224afe6c96c6700100ee385201520",
+  "host": {
+    "os": "linux",
+    "architecture": "arm64"
+  },
+  "azure": {
+    "subscriptionId": "fafa4db3-20e5-4aba-b19f-a7fe6f2018bc",
+    "location": "westus"
+  },
+  "cleanupPolicy": "leave-running",
+  "journeys": {
+    "grafana": {
+      "environment": "rr-grafana-0717",
+      "resourceGroup": "rg-rr-grafana-0717",
+      "status": "pending"
+    },
+    "n8n": {
+      "environment": "rr-n8n-0717",
+      "resourceGroup": "rg-rr-n8n-0717",
+      "status": "pending"
+    },
+    "superset": {
+      "environment": "rr-superset-0717",
+      "resourceGroup": "rg-rr-superset-0717",
+      "status": "pending"
+    },
+    "aimarket": {
+      "environment": "rr-aimarket-0717",
+      "resourceGroup": "rg-rr-aimarket-0717",
+      "status": "pending"
+    },
+    "smart-todo": {
+      "environment": "rr-smarttodo-0717",
+      "resourceGroup": "rg-rr-smarttodo-0717",
+      "status": "pending"
+    }
+  }
+}

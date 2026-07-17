@@ -1,0 +1,359 @@
+# Superset Azure Troubleshooting Guide
+
+This guide covers common issues when deploying Apache Superset on Azure Kubernetes Service.
+
+## Issue 1: psycopg2 Not Found
+
+### Symptoms
+```
+ModuleNotFoundError: No module named 'psycopg2'
+```
+or
+```
+Context impl SQLiteImpl
+```
+in logs instead of `PostgresqlImpl`
+
+### Root Cause
+The official `apache/superset:latest` Docker image does NOT include psycopg2 (the PostgreSQL driver). Without it, Superset falls back to SQLite.
+
+### Why Simple Solutions Don't Work
+
+1. **`pip install psycopg2-binary`** - Goes to user site-packages which the venv Python doesn't see
+2. **`pip install --target=/app/.venv/lib/.../site-packages`** - Permission denied (read-only)
+3. **Setting PYTHONPATH** - The venv Python ignores PYTHONPATH for certain locations
+4. **`uv pip install`** - Also fails with permission denied
+
+### Solution
+
+Use an emptyDir volume as the installation target:
+
+```yaml
+volumes:
+- name: psycopg2-install
+  emptyDir: {}
+
+initContainers:
+- name: superset-init
+  volumeMounts:
+  - name: psycopg2-install
+    mountPath: /psycopg2-lib
+  command: ["/bin/sh", "-c"]
+  args:
+    - |
+      pip install psycopg2-binary --target=/psycopg2-lib
+      PYTHONPATH=/psycopg2-lib superset db upgrade
+      # ...
+
+containers:
+- name: superset
+  env:
+  - name: PYTHONPATH
+    value: "/psycopg2-lib"
+  volumeMounts:
+  - name: psycopg2-install
+    mountPath: /psycopg2-lib
+```
+
+### Verification
+
+Run `node .github/scripts/verify-superset.mjs`, then isolate the import if needed with `kubectl exec -n superset <pod> -c superset -- python -c "import psycopg2; print('OK')"`.
+
+---
+
+## Issue 2: SQLALCHEMY_DATABASE_URI Not Recognized
+
+### Symptoms
+- Superset uses SQLite even though SQLALCHEMY_DATABASE_URI env var is set
+- Logs show "SQLiteImpl" instead of "PostgresqlImpl"
+
+### Root Cause
+Superset does NOT read SQLALCHEMY_DATABASE_URI directly from the environment. It requires a `superset_config.py` file that explicitly reads the environment variable.
+
+### Solution
+
+Create a ConfigMap with superset_config.py:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-config
+  namespace: superset
+data:
+  superset_config.py: |
+    import os
+    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'sqlite:////app/superset_home/superset.db')
+    SECRET_KEY = os.environ.get('SUPERSET_SECRET_KEY', 'change-me')
+```
+
+Mount it and set the path:
+```yaml
+env:
+- name: SUPERSET_CONFIG_PATH
+  value: /app/pythonpath/superset_config.py
+volumeMounts:
+- name: superset-config
+  mountPath: /app/pythonpath
+```
+
+### Verification
+
+Retrieve the main-container logs with `kubectl logs -n superset <pod> -c superset` and inspect the returned text for `Loaded your LOCAL configuration`. Don't pipe required verification through host-specific `grep` commands.
+
+---
+
+## Issue 3: "'tcp' is not a valid port number"
+
+### Symptoms
+```
+Error: 'tcp' is not a valid port number
+```
+
+### Root Cause
+This error is misleading - it's actually caused by psycopg2 not being installed. The error occurs during SQLAlchemy connection string parsing.
+
+### Solution
+See Issue 1 - install psycopg2-binary.
+
+---
+
+## Issue 4: Pod Stuck in Init:0/1
+
+### Symptoms
+- Pod shows `Init:0/1` status for a long time
+- Eventually crashes with `Init:Error` or `Init:CrashLoopBackOff`
+
+### Possible Causes
+
+1. **Database not reachable** - Check PostgreSQL firewall rules
+2. **Wrong credentials** - Verify connection string
+3. **psycopg2 not installed** - See Issue 1
+4. **Config file not mounted** - See Issue 2
+
+### Debugging Steps
+
+```text
+# Check init container logs
+kubectl logs -n superset <pod> -c superset-init
+
+# Describe pod for events
+kubectl describe pod -n superset <pod>
+
+# Check PostgreSQL from an approved temporary pod without printing credentials in shared logs
+kubectl run -it --rm debug-pg --image=postgres:15 --restart=Never -- psql <redacted-connection-string> -c "SELECT 1;"
+```
+
+---
+
+## Issue 5: 500 Internal Server Error
+
+### Symptoms
+- Pod shows 1/1 Running
+- curl returns 500 error
+- Health endpoint may work but /login/ fails
+
+### Possible Causes
+
+1. **Database connection failing at runtime** - Different config than init
+2. **SQLite being used instead of PostgreSQL** - See Issue 2
+3. **Database migrations incomplete** - Init container may have failed silently
+
+### Debugging Steps
+
+```text
+# Check main container logs, then inspect the returned text for pending migrations or errors
+kubectl logs -n superset <pod> -c superset
+
+# Verify database connection
+kubectl exec -n superset <pod> -c superset -- python -c "import os; from sqlalchemy import create_engine; print(create_engine(os.environ['SQLALCHEMY_DATABASE_URI']).connect())"
+```
+
+---
+
+## Issue 6: Permission Denied Errors
+
+### Symptoms
+```
+PermissionError: [Errno 13] Permission denied
+```
+
+### Root Cause
+The Superset container runs as non-root user `superset` with limited write permissions.
+
+### Locations You CAN Write To
+- `/psycopg2-lib` (if using emptyDir volume)
+- `/app/superset_home/.local/` (user directory)
+- `/tmp`
+
+### Locations You CANNOT Write To
+- `/app/.venv/lib/python3.10/site-packages/` (read-only)
+- `/usr/local/lib/` (read-only)
+
+---
+
+## Issue 7: Readiness Probe Failing
+
+### Symptoms
+- Pod stuck at 0/1 READY for a long time
+- Eventually becomes 1/1
+
+### Root Cause
+Superset takes time to start up, especially on first request when it syncs configuration.
+
+### Solution
+Use generous probe timing:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8088
+  initialDelaySeconds: 45    # Give it time to start
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 5        # Allow multiple failures before giving up
+```
+
+---
+
+## Diagnostic Commands Reference
+
+```text
+# Get all resources in superset namespace
+kubectl get all -n superset
+
+# Watch pod status
+kubectl get pods -n superset -w
+
+# Check init container logs
+kubectl logs -n superset <pod> -c superset-init
+
+# Check main container logs
+kubectl logs -n superset <pod> -c superset
+
+# Check previous container logs after a restart
+kubectl logs -n superset <pod> -c superset --previous
+
+# Describe pod for events
+kubectl describe pod -n superset <pod>
+
+# Execute commands in container
+kubectl exec -n superset <pod> -c superset -- <command>
+
+# Get ingress IP
+kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+# Run the portable deployment checks
+node .github/scripts/verify-superset.mjs
+```
+
+---
+
+## Quick Verification Checklist
+
+Run `node .github/scripts/verify-superset.mjs`. A passing result requires every pod to be Ready/Running, PostgreSQL evidence with no SQLite fallback, and HTTP 200 from `/health`. Browser acceptance additionally uses bundled Playwright Chromium and the selectors documented in `SKILL.md`.
+
+---
+
+## Key Learnings Summary
+
+1. **psycopg2-binary is mandatory** - Official image doesn't include it; install to emptyDir with `--target`
+2. **superset_config.py is required** - Superset won't read env vars directly; ConfigMap is essential
+3. **PYTHONPATH must include /psycopg2-lib** - Both init and main containers need this
+4. **emptyDir volume shares between containers** - Init installs psycopg2, main uses it
+5. **Azure PostgreSQL requires sslmode=require** - Always include in connection string
+6. **Startup probe allows 10 minutes** - First deploy with migrations takes time
+7. **"SQLiteImpl" in logs = misconfiguration** - Must see "PostgresqlImpl" for PostgreSQL
+8. **Init container logs are separate** - Use `-c superset-init` to debug migration issues
+9. **AVM PostgreSQL passwordAuth defaults to Disabled** - Must set `authConfig.passwordAuth: 'Enabled'`
+10. **AVM PostgreSQL publicNetworkAccess defaults to Disabled** - Must set `publicNetworkAccess: 'Enabled'`
+11. **AVM AKS disableLocalAccounts defaults to true** - Must set `disableLocalAccounts: false` without AAD
+12. **AVM AKS availabilityZones** - Some regions don't support AZ; set `availabilityZones: []` explicitly
+13. **Pin passwords with azd env** - `newGuid()` regenerates on redeploy, causing auth mismatches
+
+---
+
+## Issue 8: AKS AvailabilityZoneNotSupported
+
+### Symptoms
+```
+AvailabilityZoneNotSupported: The zone(s) '1' for resource 'system' is not supported.
+The supported zones for location 'westus' are ''.
+```
+
+### Root Cause
+The AVM AKS module may default the system agent pool to availability zone 1. Some regions (e.g., `westus`) don't support AZ for AKS.
+
+### Solution
+Explicitly set `availabilityZones: []` in the agent pool profile:
+```bicep
+primaryAgentPoolProfiles: [
+  {
+    name: 'system'
+    availabilityZones: []   // No AZ — required for westus
+    // ...
+  }
+]
+```
+
+---
+
+## Issue 9: disableLocalAccounts Requires AAD
+
+### Symptoms
+```
+disableLocalAccounts can only be set on Azure AD integration enabled cluster.
+```
+
+### Root Cause
+The AVM AKS module defaults `disableLocalAccounts` to `true`, which requires AAD (Entra ID) integration. Without AAD configured, deployment fails.
+
+### Solution
+```bicep
+disableLocalAccounts: false
+```
+
+---
+
+## Issue 10: PostgreSQL Authentication Failed
+
+### Symptoms
+- Superset init container logs show "authentication failed for user"
+- Same root cause as n8n Issue 12
+
+### Root Cause
+AVM PostgreSQL module defaults `passwordAuth` to `Disabled` (Entra-only).
+
+### Solution
+```bicep
+authConfig: {
+  passwordAuth: 'Enabled'
+  activeDirectoryAuth: 'Disabled'
+}
+```
+
+---
+
+## Issue 11: Pod Stuck in Pending — Insufficient CPU
+
+### Symptoms
+- Pod stays in `Pending` state indefinitely
+- `kubectl describe pod` shows: "0/1 nodes are available: 1 Insufficient cpu"
+
+### Root Cause
+Standard_DS2_v2 (2 vCPU) has ~500m CPU remaining after AKS system pods. A Superset pod requesting 500m+ CPU won't fit.
+
+### Solution
+Reduce CPU request to 250m (limit can stay at 1000m for bursting):
+```yaml
+resources:
+  requests:
+    cpu: "250m"      # NOT 500m — won't fit on DS2_v2
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "2Gi"
+```
+
+Or use a larger VM size (e.g., Standard_DS3_v2 with 4 vCPU).
