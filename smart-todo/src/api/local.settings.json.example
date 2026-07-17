@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AZURE_SQL_SERVER": "localhost",
+    "AZURE_SQL_DATABASE": "SmartTodo",
+    "AZURE_SQL_USER": "",
+    "AZURE_SQL_PASSWORD": "",
+    "AZURE_AI_ENDPOINT": "",
+    "AZURE_AI_DEPLOYMENT": "gpt-5-mini",
+    "AZURE_AI_KEY": ""
+  }
+}

@@ -1,0 +1,5 @@
+AIMarket journey, Phase 1 of 4. Read JOURNEY.md and PLAN.md fully, plus ../.github/skills/data-access-abstraction/SKILL.md and ../AGENTS.md. Work only in this aimarket folder.
+
+Using the default Node.js 24 + TypeScript + Express stack, generate the complete API under api/: project files, strict data models and validation, repository interfaces and SQLite implementation, exact ten-product seed data from PLAN.md, REST endpoints for products/orders/users, error handling, tests, and scripts/verify-api.mjs. Preserve the validated prod-10 image URL. Price validation must accept 64.99 and 0.1, reject 64.991, NaN, and infinities without unsafe exact floating-point multiplication comparisons. Make the local port configurable and choose a free port without killing another process.
+
+Install dependencies, build, run all tests, start the tracked API, run the verifier against real HTTP behavior, then stop only that process. Repair actual failures. Record evidence in phase1-report.md. Create issues.md only if this rerun finds a genuinely new journey defect. Do not create Azure resources in this phase.

@@ -1,0 +1,5 @@
+AIMarket journey, Phase 3 of 4. Read JOURNEY.md, PLAN.md, phase1-report.md, phase2-report.md, and all generated code. Work only in this aimarket folder.
+
+Implement the PLAN.md AI features cleanly in the existing API and UI: semantic product search backed by an Azure AI Search adapter and shopping chat backed by Microsoft Foundry, with interfaces that remain testable. Never commit or print credentials. Add endpoints, UI integration, tests, and graceful actionable errors when cloud credentials are absent locally. Keep exact production behavior ready for managed identity/configuration in Phase 4.
+
+Build and run all API/web tests. Exercise deterministic local paths or mocks, verify search/chat request and response contracts, and repair actual failures. Save phase3-report.md. Add issues.md only for a genuinely new defect. Do not create Azure resources in this phase.

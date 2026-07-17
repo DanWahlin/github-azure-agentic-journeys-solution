@@ -137,10 +137,10 @@ Copilot CLI accepts prompt text with `-p`; it does not accept a `--prompt-file` 
 Write each prompt to a UTF-8 file, then use the cross-platform helper:
 
 ```text
-node scripts/run-copilot-prompt.mjs --prompt-file <prompt-path> --cwd <workspace>
+node scripts/run-copilot-prompt.mjs --prompt-file <prompt-path> --cwd <workspace> --allow-dir <repository-root> --allow-all-tools --allow-all-urls
 ```
 
-The helper reads the file and calls `copilot -p <prompt>` with `shell: false`, avoiding Bash and PowerShell quoting differences.
+The helper reads the file and calls `copilot -p <prompt>` with `shell: false`, avoiding Bash and PowerShell quoting differences. Non-interactive runs must explicitly opt into the tools and URLs required by the journey, and must add the repository root when the workspace is a child directory; otherwise Copilot cannot request approval and silently loses access to commands or parent skills.
 
 Before launching a batch, run `copilot --help` and one harmless prompt smoke test. If that fails, do not start parallel or background journey processes.
 
@@ -157,7 +157,7 @@ Priority order:
 3. Use a journey-provided PowerShell or Bash variant that matches the host.
 4. If only an OS-specific command exists, stop and log a documentation defect rather than inventing a translation after resources exist.
 
-Generated `azd` lifecycle hooks must be `.mjs` or `.ts` files referenced directly from `azure.yaml`. Do not generate `.sh` hooks, `shell: sh`, `chmod`, shell traps, command substitution, or pipelines for required deployment behavior.
+Generated `azd` lifecycle hooks must be CommonJS `.js` or `.ts` files referenced directly from `azure.yaml`; `azd` 1.28.0 rejects `.mjs` hook paths. Do not generate `.sh` hooks, `shell: sh`, `chmod`, shell traps, command substitution, or pipelines for required deployment behavior.
 
 For development servers:
 
@@ -236,7 +236,7 @@ node scripts/capture-screenshot.mjs --url <url> --output <png> --fail-on-resourc
 For Superset login, additionally pass:
 
 ```text
---username admin --password <secret> --username-selector #username --password-selector #password --submit-selector "button:has-text('Sign in')" --success-path /superset/welcome/
+--username admin --password <secret> --username-selector #username --password-selector #password --submit-selector "input[type='submit'], button[type='submit']" --success-path /superset/welcome/
 ```
 
 Never print credentials. Visually inspect the saved image and review failed document, script, XHR, fetch, and image requests. A broken product image fails AIMarket acceptance.

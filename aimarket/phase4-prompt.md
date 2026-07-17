@@ -1,0 +1,7 @@
+AIMarket journey, Phase 4 of 4, deploy and verify. Read JOURNEY.md, PLAN.md, every phase report, ../.github/skills/container-apps-deployment/SKILL.md, ../.github/skills/journey-runner/SKILL.md, and ../AGENTS.md.
+
+Work only in this aimarket folder. Use subscription [REDACTED], location westus, azd environment rr-aimarket-0717, and resource group rg-rr-aimarket-0717. Host is Linux ARM64. Prefer remote ACR builds for linux/amd64. Static frontend builder stages must use $BUILDPLATFORM. Never install privileged emulation.
+
+Generate complete Bicep/azd infrastructure for ACR, API and web Container Apps, AI Search, Microsoft Foundry/model deployment, monitoring, managed identities, AcrPull assignments, and explicit configuration.registries entries with identity=system. Generate portable infra/hooks/postdeploy.js as CommonJS. Ensure filtered web deployments explicitly invoke it so VITE_API_URL is baked into the production frontend.
+
+Run all builds/tests, validate Bicep and azure.yaml, run azd up, repair evidence-backed failures, and retry until successful. Verify live /api/health, exactly 10 products, semantic search, AI chat, production storefront API integration, and all ten images. Capture screenshot-aimarket.png with bundled Chromium and fail on resource errors. Write sanitized run-report.md and resource inventory. Create issues.md only for a genuinely new defect. After all live and browser verification passes, delete only rg-rr-aimarket-0717 and verify it no longer exists. Touch no unrelated Azure resources.

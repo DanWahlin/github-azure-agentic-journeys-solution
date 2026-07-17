@@ -1,0 +1,9 @@
+{
+  "id": "step-2-1",
+  "todoId": "todo-2",
+  "title": "Choose a desk and chair",
+  "description": "Pick an ergonomic desk and adjustable chair that fit your space and budget.",
+  "order": 1,
+  "isCompleted": true,
+  "createdAt": "2026-07-17T08:13:58.956Z"
+}

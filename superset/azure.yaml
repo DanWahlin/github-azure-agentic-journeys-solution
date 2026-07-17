@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+name: superset-aks
+metadata:
+  template: superset-aks@1.0.0
+infra:
+  provider: bicep
+  path: infra-superset
+  module: main
+hooks:
+  postprovision:
+    run: node ./infra-superset/hooks/postprovision.mjs
+    continueOnError: false
+    interactive: false

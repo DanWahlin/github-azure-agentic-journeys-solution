@@ -1,0 +1,13 @@
+.git*
+.vscode
+__azurite_db*__.json
+__blobstorage__
+__queuestorage__
+.azurite
+node_modules
+dist/**/*.map
+local.settings.json
+test
+scripts
+.gitignore
+*.md

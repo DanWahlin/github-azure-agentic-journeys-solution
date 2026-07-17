@@ -419,7 +419,7 @@ If the Simulator says `Application failed preflight checks` or `SBMainWorkspace 
     AZURE_SQL_SERVER (full FQDN), AZURE_SQL_DATABASE
   - Outputs in SCREAMING_SNAKE_CASE: API_URL, SQL_SERVER_NAME, etc.
   - azd-service-name: 'api' tag on the Function App
-  - cross-platform postprovision hook: generate infra/hooks/postprovision.mjs and
+  - cross-platform postprovision hook: generate infra/hooks/postprovision.js and
     infra/hooks/postprovision-schema.sql exactly as specified in the
     Post-Provision and Database Schema Initialization sections of PLAN.md,
     referenced directly as hooks.postprovision in azure.yaml without shell: sh
@@ -467,12 +467,12 @@ Deployment may take several minutes. If it fails, ask GitHub Copilot to help dia
 
 ##### Step 3: Confirm the post-provision SQL setup
 
-Bicep creates the Function App identity, but Azure SQL needs a separate database user and schema step. The generated `infra/hooks/postprovision.mjs` runs automatically after provisioning and works on Windows, macOS, and Linux. It invokes `sqlcmd` through Node.js, temporarily opens only the current client IP, handles Azure SQL Redirect/Proxy connectivity, applies the schema and seed data, and restores the firewall rule and original connection policy in `finally`.
+Bicep creates the Function App identity, but Azure SQL needs a separate database user and schema step. The generated `infra/hooks/postprovision.js` runs automatically after provisioning and works on Windows, macOS, and Linux. It invokes `sqlcmd` through Node.js, temporarily opens only the current client IP, handles Azure SQL Redirect/Proxy connectivity, applies the schema and seed data, and restores the firewall rule and original connection policy in `finally`.
 
 Check `azd up` for `Post-provision SQL setup complete.` If the hook reports a missing prerequisite, use the [cross-platform installation guide](../../docs/tool-installation.md), verify `node --version` and `sqlcmd --version`, then rerun:
 
 ```text
-node infra/hooks/postprovision.mjs
+node infra/hooks/postprovision.js
 ```
 
 Do not reproduce the setup as ad hoc shell commands. The portable hook owns identifier escaping, argument quoting, temporary firewall cleanup, and connection-policy restoration. If it fails, fix the reported prerequisite or Azure permission and rerun the same idempotent hook.
@@ -600,7 +600,7 @@ Functions and Microsoft Foundry scale to zero when idle, so you pay almost nothi
 
 **Cause:** Managed identity not granted access to Azure SQL. The identity needs to be added as a database user with the right roles.
 
-**Fix:** Run `node infra/hooks/postprovision.mjs` while authenticated as the configured Microsoft Entra administrator. The idempotent hook handles the managed-identity user, roles, temporary firewall rule, Proxy/Redirect policy, and cleanup.
+**Fix:** Run `node infra/hooks/postprovision.js` while authenticated as the configured Microsoft Entra administrator. The idempotent hook handles the managed-identity user, roles, temporary firewall rule, Proxy/Redirect policy, and cleanup.
 
 If logs show `getaddrinfo ENOTFOUND <sql-name>`, set `AZURE_SQL_SERVER` to the full FQDN: `<sql-name>.database.windows.net`.
 

@@ -1,0 +1,10 @@
+{
+  "name": "n8n-journey-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portable verification and screenshot helpers for the n8n Azure journey.",
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

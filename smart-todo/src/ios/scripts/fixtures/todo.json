@@ -1,0 +1,47 @@
+{
+  "id": "todo-2",
+  "title": "Set up home office",
+  "status": "in_progress",
+  "userId": "user-1",
+  "stepsGenerated": true,
+  "createdAt": "2026-07-17T08:13:58.956Z",
+  "updatedAt": "2026-07-17T08:13:58.956Z",
+  "steps": [
+    {
+      "id": "step-2-1",
+      "todoId": "todo-2",
+      "title": "Choose a desk and chair",
+      "description": "Pick an ergonomic desk and adjustable chair that fit your space and budget.",
+      "order": 1,
+      "isCompleted": true,
+      "createdAt": "2026-07-17T08:13:58.956Z"
+    },
+    {
+      "id": "step-2-2",
+      "todoId": "todo-2",
+      "title": "Set up monitor and peripherals",
+      "description": "Position the monitor at eye level and connect the keyboard, mouse, and webcam.",
+      "order": 2,
+      "isCompleted": true,
+      "createdAt": "2026-07-17T08:13:58.956Z"
+    },
+    {
+      "id": "step-2-3",
+      "todoId": "todo-2",
+      "title": "Organize cable management",
+      "description": "Route and bundle cables with clips or a tray to keep the desk tidy.",
+      "order": 3,
+      "isCompleted": false,
+      "createdAt": "2026-07-17T08:13:58.956Z"
+    },
+    {
+      "id": "step-2-4",
+      "todoId": "todo-2",
+      "title": "Set up lighting",
+      "description": "Add a desk lamp and reduce glare so the workspace is well lit for calls.",
+      "order": 4,
+      "isCompleted": false,
+      "createdAt": "2026-07-17T08:13:58.956Z"
+    }
+  ]
+}

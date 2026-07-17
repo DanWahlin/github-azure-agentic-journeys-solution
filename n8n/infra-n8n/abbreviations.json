@@ -1,0 +1,8 @@
+{
+  "resourceGroup": "rg",
+  "logAnalyticsWorkspace": "log",
+  "containerAppsEnvironment": "cae",
+  "containerApp": "ca",
+  "userAssignedIdentity": "id",
+  "postgresqlServer": "psql"
+}

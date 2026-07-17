@@ -1,0 +1,10 @@
+{
+  "name": "grafana-journey-runner-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portable verification and screenshot helpers for the Grafana Azure journey run.",
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

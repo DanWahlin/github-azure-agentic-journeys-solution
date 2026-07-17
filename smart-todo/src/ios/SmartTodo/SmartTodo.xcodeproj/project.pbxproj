@@ -1,0 +1,300 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000000000000000000002 /* SmartTodoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000001 /* SmartTodoApp.swift */; };
+		000000000000000000000004 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000003 /* Config.swift */; };
+		000000000000000000000006 /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000005 /* Todo.swift */; };
+		000000000000000000000008 /* ActionStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000007 /* ActionStep.swift */; };
+		00000000000000000000000A /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000009 /* APIError.swift */; };
+		00000000000000000000000C /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000B /* APIClient.swift */; };
+		00000000000000000000000E /* TodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000D /* TodoListView.swift */; };
+		000000000000000000000010 /* AddTodoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000000F /* AddTodoView.swift */; };
+		000000000000000000000012 /* TodoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000011 /* TodoDetailView.swift */; };
+		000000000000000000000014 /* ActionStepsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000013 /* ActionStepsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000001 /* SmartTodoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartTodoApp.swift; sourceTree = "<group>"; };
+		000000000000000000000003 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		000000000000000000000005 /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
+		000000000000000000000007 /* ActionStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionStep.swift; sourceTree = "<group>"; };
+		000000000000000000000009 /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		00000000000000000000000B /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		00000000000000000000000D /* TodoListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoListView.swift; sourceTree = "<group>"; };
+		00000000000000000000000F /* AddTodoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTodoView.swift; sourceTree = "<group>"; };
+		000000000000000000000011 /* TodoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoDetailView.swift; sourceTree = "<group>"; };
+		000000000000000000000013 /* ActionStepsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionStepsView.swift; sourceTree = "<group>"; };
+		00000000000000000000001C /* SmartTodo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartTodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		00000000000000000000001E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000016 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000019 /* Services */,
+				000000000000000000000018 /* Models */,
+				00000000000000000000001A /* Views */,
+				000000000000000000000001 /* SmartTodoApp.swift */,
+				000000000000000000000003 /* Config.swift */,
+				000000000000000000000017 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000017 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000001C /* SmartTodo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		000000000000000000000018 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000005 /* Todo.swift */,
+				000000000000000000000007 /* ActionStep.swift */,
+				000000000000000000000009 /* APIError.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		000000000000000000000019 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000000B /* APIClient.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		00000000000000000000001A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000000D /* TodoListView.swift */,
+				00000000000000000000000F /* AddTodoView.swift */,
+				000000000000000000000011 /* TodoDetailView.swift */,
+				000000000000000000000013 /* ActionStepsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		00000000000000000000001B /* SmartTodo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000020 /* Build configuration list for PBXNativeTarget "SmartTodo" */;
+			buildPhases = (
+				00000000000000000000001D /* Sources */,
+				00000000000000000000001E /* Frameworks */,
+				00000000000000000000001F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SmartTodo;
+			productName = SmartTodo;
+			productReference = 00000000000000000000001C /* SmartTodo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000015 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					00000000000000000000001B = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 000000000000000000000021 /* Build configuration list for PBXProject "SmartTodo" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 000000000000000000000016;
+			productRefGroup = 000000000000000000000017 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				00000000000000000000001B /* SmartTodo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		00000000000000000000001F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		00000000000000000000001D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000002 /* SmartTodoApp.swift in Sources */,
+				000000000000000000000004 /* Config.swift in Sources */,
+				000000000000000000000006 /* Todo.swift in Sources */,
+				000000000000000000000008 /* ActionStep.swift in Sources */,
+				00000000000000000000000A /* APIError.swift in Sources */,
+				00000000000000000000000C /* APIClient.swift in Sources */,
+				00000000000000000000000E /* TodoListView.swift in Sources */,
+				000000000000000000000010 /* AddTodoView.swift in Sources */,
+				000000000000000000000012 /* TodoDetailView.swift in Sources */,
+				000000000000000000000014 /* ActionStepsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		000000000000000000000022 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		000000000000000000000023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		000000000000000000000024 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.SmartTodo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		000000000000000000000025 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.SmartTodo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000000000000000000000021 /* Build configuration list for PBXProject "SmartTodo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000022 /* Debug */,
+				000000000000000000000023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000020 /* Build configuration list for PBXNativeTarget "SmartTodo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000024 /* Debug */,
+				000000000000000000000025 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000000000000000000000015 /* Project object */;
+}

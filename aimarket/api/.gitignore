@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.log
+
+# SQLite database files (regenerated from seed on startup)
+aimarket.db
+aimarket.db-wal
+aimarket.db-shm
+*.db
+*.db-wal
+*.db-shm
+
+.env
+
+.runtime-port

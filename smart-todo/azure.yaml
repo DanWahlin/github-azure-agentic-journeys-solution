@@ -1,0 +1,23 @@
+name: smart-todo
+metadata:
+  template: smart-todo@0.0.1
+services:
+  api:
+    project: ./src/api
+    host: function
+    language: ts
+infra:
+  provider: bicep
+  path: ./infra
+hooks:
+  postprovision:
+    posix:
+      shell: sh
+      run: node ./infra/hooks/postprovision.js
+      continueOnError: false
+      interactive: false
+    windows:
+      shell: pwsh
+      run: node ./infra/hooks/postprovision.js
+      continueOnError: false
+      interactive: false

@@ -7,35 +7,43 @@
     "architecture": "arm64"
   },
   "azure": {
-    "subscriptionId": "fafa4db3-20e5-4aba-b19f-a7fe6f2018bc",
+    "subscriptionId": "[REDACTED]",
     "location": "westus"
   },
-  "cleanupPolicy": "leave-running",
+  "cleanupPolicy": "delete-after-success",
   "journeys": {
     "grafana": {
       "environment": "rr-grafana-0717",
       "resourceGroup": "rg-rr-grafana-0717",
-      "status": "pending"
+      "status": "resource_group_deleted",
+      "url": "https://ca-grafana-xhq7rqjkxre3u.agreeableocean-ce36137b.westus.azurecontainerapps.io"
     },
     "n8n": {
       "environment": "rr-n8n-0717",
       "resourceGroup": "rg-rr-n8n-0717",
-      "status": "pending"
+      "status": "resource_group_deleted",
+      "url": "https://ca-n8n-l5mksrruk3b6s.jollybush-2d6aa002.westus.azurecontainerapps.io",
+      "newIssues": ["azd 1.28.0 rejects .mjs lifecycle hooks; fixed with CommonJS .js"]
     },
     "superset": {
       "environment": "rr-superset-0717",
       "resourceGroup": "rg-rr-superset-0717",
-      "status": "pending"
+      "status": "resource_group_deleted",
+      "url": "http://20.253.212.180",
+      "managedResourceGroup": "MC_rg-rr-superset-0717_aks-5555lf475ficw_westus",
+      "newIssues": ["Superset 4.1.1 uses an input submit control; fixed browser selector guidance"]
     },
     "aimarket": {
       "environment": "rr-aimarket-0717",
       "resourceGroup": "rg-rr-aimarket-0717",
-      "status": "pending"
+      "status": "resource_group_deleted",
+      "newIssues": []
     },
     "smart-todo": {
       "environment": "rr-smarttodo-0717",
       "resourceGroup": "rg-rr-smarttodo-0717",
-      "status": "pending"
+      "status": "resource_group_deleted",
+      "newIssues": ["Shared verifier used an undefined GET-by-ID route; fixed to fetch from the user list"]
     }
   }
 }

@@ -1,0 +1,16 @@
+node_modules
+dist
+npm-debug.log
+*.log
+.env
+.env.*
+.git
+.gitignore
+.dockerignore
+Dockerfile
+*.db
+*.db-wal
+*.db-shm
+.runtime-port
+tests
+scripts

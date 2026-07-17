@@ -1,0 +1,6 @@
+{
+  "logAnalyticsWorkspace": "log-",
+  "containerAppsEnvironment": "cae-",
+  "containerApp": "ca-",
+  "resourceGroup": "rg-"
+}

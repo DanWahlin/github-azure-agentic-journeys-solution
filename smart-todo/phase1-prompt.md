@@ -1,0 +1,5 @@
+SmartTodo journey, Phase 1 of 3. Read JOURNEY.md and PLAN.md fully, plus ../.github/skills/data-access-abstraction/SKILL.md and ../AGENTS.md. Work only in this smart-todo folder.
+
+Using Node.js 24 + TypeScript and the Azure Functions v4 programming model, generate src/api with host.json, package files, project-local Azurite, models for Todo and ActionStep, repository interfaces/factory, Azure SQL implementation using managed identity, exact seed data, every CRUD/step endpoint in PLAN.md, gpt-5-mini step generation, validation, tests, schema SQL, and a portable API verifier. Todo status values are pending, in_progress, completed. Never commit credentials.
+
+Build and run all tests. On this Linux ARM64 host, do not install AMD64 emulation or claim local SQL/Xcode execution. Use mocks or repository test doubles for local tests while preserving the real managed-identity SQL implementation. Repair actual failures and write phase1-report.md. Create issues.md only for a genuinely new defect. Do not provision Azure yet.

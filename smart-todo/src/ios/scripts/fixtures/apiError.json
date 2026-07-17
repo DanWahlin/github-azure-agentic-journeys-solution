@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Title is required and must be between 1 and 500 characters."
+  }
+}

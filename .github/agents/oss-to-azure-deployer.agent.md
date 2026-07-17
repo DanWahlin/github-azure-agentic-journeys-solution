@@ -51,7 +51,7 @@ This skill is NOT needed for AKS deployments (Superset).
 
 Generate ALL infrastructure from scratch. Never reuse existing infra code.
 
-**Outputs:** `azure.yaml`, `infra-<app>/main.bicep`, `infra-<app>/main.parameters.json`, and any required cross-platform `infra-<app>/hooks/postprovision.mjs` hook. Reference JavaScript or TypeScript hooks directly from `azure.yaml`; never require `.sh`, `shell: sh`, command substitution, or `chmod` for lifecycle behavior.
+**Outputs:** `azure.yaml`, `infra-<app>/main.bicep`, `infra-<app>/main.parameters.json`, and any required cross-platform `infra-<app>/hooks/postprovision.js` hook. Reference JavaScript or TypeScript hooks directly from `azure.yaml`; never require `.sh`, `shell: sh`, command substitution, or `chmod` for lifecycle behavior.
 
 **References to read:**
 - `azure-prepare/references/recipes/azd/azure-yaml.md` — azure.yaml structure

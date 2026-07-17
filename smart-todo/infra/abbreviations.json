@@ -1,0 +1,11 @@
+{
+  "applicationInsights": "appi-",
+  "logAnalyticsWorkspace": "log-",
+  "cognitiveServices": "aif-",
+  "functionApp": "func-",
+  "appServicePlan": "plan-",
+  "storageAccount": "st",
+  "sqlServer": "sql-",
+  "sqlDatabase": "sqldb-",
+  "resourceGroup": "rg-"
+}

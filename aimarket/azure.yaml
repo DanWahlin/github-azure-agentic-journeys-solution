@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+name: aimarket
+metadata:
+  template: aimarket-fullstack@1.0.0
+
+services:
+  # Only the API is built/deployed by azd (remote ACR build → native linux/amd64;
+  # the API Dockerfile has no BuildKit-only `FROM --platform=$BUILDPLATFORM` line,
+  # so ACR's build task handles it). The web storefront is built and deployed by
+  # infra/hooks/postdeploy.js instead: its Dockerfile REQUIRES the BuildKit
+  # `$BUILDPLATFORM` builder stage (which ACR's classic build task cannot parse,
+  # and which azd's cross-platform local build cannot reliably load for tagging),
+  # so the hook uses a local `docker buildx --push` that keeps the Vite/esbuild
+  # build native and needs no privileged QEMU emulation. The web Container App is
+  # still provisioned by Bicep and tagged azd-service-name=web.
+  api:
+    project: ./api
+    host: containerapp
+    language: ts
+    docker:
+      path: ./Dockerfile
+      context: .
+      platform: linux/amd64
+      remoteBuild: true
+
+hooks:
+  postprovision:
+    run: infra/hooks/postprovision.js
+    interactive: false
+  postdeploy:
+    run: infra/hooks/postdeploy.js
+    interactive: false

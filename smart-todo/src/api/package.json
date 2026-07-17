@@ -1,0 +1,33 @@
+{
+  "name": "smart-todo-api",
+  "version": "0.0.1",
+  "description": "SmartTodo Azure Functions API (Node.js v4 programming model, TypeScript)",
+  "type": "module",
+  "main": "dist/functions/*.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "prestart": "npm run build",
+    "start": "func start",
+    "seed": "tsx src/data/seed.ts",
+    "test": "node --import tsx --test test/*.test.ts",
+    "azurite": "azurite --silent --location .azurite --debug .azurite/debug.log",
+    "verify": "node scripts/verify-api.mjs"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.1",
+    "mssql": "^11.0.1",
+    "openai": "^4.68.4"
+  },
+  "devDependencies": {
+    "@types/mssql": "^9.1.5",
+    "@types/node": "^24.0.0",
+    "azurite": "^3.33.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

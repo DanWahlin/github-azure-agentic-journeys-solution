@@ -505,7 +505,7 @@ For other languages (.NET, Java, Go, etc.), follow the same multi-stage pattern:
 5. azd down --force --purge when lab is done
 ```
 
-If the frontend bakes in a backend URL at build time, always generate `infra/hooks/postdeploy.mjs` from the `container-apps-deployment` skill and reference it directly from `azure.yaml`. A filtered service deployment may skip project-level hooks, so document direct `node infra/hooks/postdeploy.mjs` execution. API-only apps skip postdeploy.
+If the frontend bakes in a backend URL at build time, always generate `infra/hooks/postdeploy.js` from the `container-apps-deployment` skill and reference it directly from `azure.yaml`. A filtered service deployment may skip project-level hooks, so document direct `node infra/hooks/postdeploy.js` execution. API-only apps skip postdeploy.
 
 **Any ARM64 host:** Prefer an ACR remote build targeting `linux/amd64`. If a local cross-build is required, verify Buildx and emulation during preflight, keep static builder stages on `$BUILDPLATFORM`, and never install privileged QEMU/binfmt automatically.
 
@@ -556,10 +556,10 @@ Use a hook when configuration needs a value available only after provisioning. P
 ```yaml
 hooks:
   postprovision:
-    run: ./infra/hooks/postprovision.mjs
+    run: ./infra/hooks/postprovision.js
 ```
 
-For example, n8n's `WEBHOOK_URL` depends on the Container App URL. The `.mjs` hook resolves paths with `import.meta.url`, reads outputs with `azd env get-value`, and invokes Azure CLI through `execFileSync()` or `spawnSync()` argument arrays. It must not use Bash variables, PowerShell variables, `chmod`, pipelines, or interpolated shell strings.
+For example, n8n's `WEBHOOK_URL` depends on the Container App URL. The CommonJS `.js` hook resolves paths with `__dirname`, reads outputs with `azd env get-value`, and invokes Azure CLI through `execFileSync()` or `spawnSync()` argument arrays. It must not use Bash variables, PowerShell variables, `chmod`, pipelines, or interpolated shell strings.
 
 ---
 
@@ -755,7 +755,7 @@ Before considering a journey complete:
 - [ ] Windows, macOS, and Linux prerequisite and command paths reviewed
 - [ ] Stateful verification uses portable scripts or paired Bash and PowerShell examples
 - [ ] Browser verification uses Playwright's bundled Chromium
-- [ ] Required lifecycle hooks are `.mjs`/`.ts`, not `.sh`/`.ps1`
+- [ ] Required lifecycle hooks are CommonJS `.js` or `.ts`, not unsupported `.mjs` or host-specific `.sh`/`.ps1`
 - [ ] Wrapper module pattern used for resources needing `listKeys()` (if subscription-scoped)
 - [ ] Health probe timing tested with actual startup time
 

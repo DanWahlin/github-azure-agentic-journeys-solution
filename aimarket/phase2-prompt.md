@@ -1,0 +1,5 @@
+AIMarket journey, Phase 2 of 4. Read JOURNEY.md, PLAN.md, phase1-report.md, and the existing api/ implementation. Work only in this aimarket folder.
+
+Generate the React + TypeScript + Vite storefront under client/ exactly matching PLAN.md: responsive ten-product grid, product detail, category filter, search UI, cart and order flow, loading/error states, and configurable VITE_API_URL/local ports. Add meaningful frontend tests and a portable Node verifier that starts the API and client without killing unrelated processes. Build and test both api/ and client/, exercise the UI against the real local API, and validate every seeded image. No Azure resources in this phase. Write phase2-report.md. Create issues.md only for a genuinely new defect.
+
+Install dependencies, build, run tests, launch API and web on free tracked ports, verify the rendered storefront consumes the API and all ten product images return HTTP 2xx with image content types, then stop only those processes. Repair actual failures. Save phase2-report.md. Add issues.md only for a genuinely new defect.

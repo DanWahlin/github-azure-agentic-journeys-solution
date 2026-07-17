@@ -1,0 +1,10 @@
+{
+  "containerRegistry": "cr",
+  "logAnalytics": "log-",
+  "appInsights": "appi-",
+  "searchService": "srch-",
+  "aiServices": "ai-",
+  "containerAppsEnvironment": "cae-",
+  "containerApp": "ca-",
+  "resourceGroup": "rg-"
+}

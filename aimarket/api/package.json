@@ -1,0 +1,33 @@
+{
+  "name": "aimarket-api",
+  "version": "1.0.0",
+  "description": "AIMarket REST API (Node.js + TypeScript + Express)",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "verify": "node scripts/verify-api.mjs"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.13.1",
+    "@azure/search-documents": "^13.0.0",
+    "better-sqlite3": "^11.8.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "openai": "^6.48.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
