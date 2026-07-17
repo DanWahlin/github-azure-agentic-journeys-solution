@@ -2,6 +2,7 @@
 // Uses argument arrays (shell: false) for az, helm, and kubectl.
 // Never prints secret values.
 import { spawnSync } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -25,6 +26,22 @@ function run(cmd, args, opts = {}) {
 function getAzdEnv() {
   const res = run('azd', ['env', 'get-values', '--output', 'json'], { capture: true });
   return JSON.parse(res.stdout);
+}
+
+function ensureAzdSecret(env, name, createValue) {
+  if (env[name]) return env[name];
+
+  const value = createValue();
+  const res = spawnSync('azd', ['env', 'set', name, value], {
+    stdio: 'ignore',
+    encoding: 'utf8',
+  });
+  if (res.error || res.status !== 0) {
+    throw new Error(`Failed to persist generated azd secret: ${name}`);
+  }
+  env[name] = value;
+  console.log(`Generated and persisted missing ${name} (value not printed).`);
+  return value;
 }
 
 function sleep(ms) {
@@ -57,8 +74,16 @@ async function main() {
   const pgDb = env.POSTGRES_DATABASE || 'superset';
   const pgUser = env.POSTGRES_USER;
   const pgPassword = env.POSTGRES_PASSWORD;
-  const secretKey = env.SUPERSET_SECRET_KEY;
-  const adminPassword = env.SUPERSET_ADMIN_PASSWORD;
+  const secretKey = ensureAzdSecret(
+    env,
+    'SUPERSET_SECRET_KEY',
+    () => randomBytes(48).toString('base64url')
+  );
+  const adminPassword = ensureAzdSecret(
+    env,
+    'SUPERSET_ADMIN_PASSWORD',
+    () => `Aa1!${randomBytes(24).toString('base64url')}`
+  );
 
   for (const [k, v] of Object.entries({
     AZURE_RESOURCE_GROUP: rg, AZURE_AKS_CLUSTER_NAME: aksName, POSTGRES_HOST: pgHost,

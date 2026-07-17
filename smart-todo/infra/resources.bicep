@@ -130,20 +130,14 @@ resource aiServices 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   }
 }
 
-resource gptDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
-  parent: aiServices
-  name: aiDeploymentName
-  sku: {
-    name: 'GlobalStandard'
-    capacity: 50
-  }
-  properties: {
-    model: {
-      format: 'OpenAI'
-      name: 'gpt-5-mini'
-      version: aiModelVersion
-    }
-    versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
+// Use a nested deployment boundary so the model PUT cannot race the account's
+// asynchronous transition to a terminal provisioning state.
+module gptDeployment 'ai-model-deployment.bicep' = {
+  name: 'ai-model-${resourceToken}'
+  params: {
+    aiServicesName: aiServices.name
+    deploymentName: aiDeploymentName
+    modelVersion: aiModelVersion
   }
 }
 
@@ -189,7 +183,7 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
 // Allow other Azure services (the Function App) to reach the server.
 resource allowAzureServices 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = {
   parent: sqlServer
-  name: 'AllowAllWindowsAzureIps'
+  name: 'AllowAzureServices'
   properties: {
     startIpAddress: '0.0.0.0'
     endIpAddress: '0.0.0.0'

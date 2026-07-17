@@ -12,9 +12,9 @@ This repository contains the generated solution for all five journeys from [DanW
 | [n8n](./n8n/) | Pinned n8n 2.30.6 deployment with PostgreSQL, health probes, and owner onboarding | [Run report](./n8n/run-report.md) · [Screenshot](./n8n/screenshot-n8n.png) · [Issues](./n8n/issues.md) |
 | [Superset](./superset/) | AKS, PostgreSQL, Helm/Kubernetes configuration, and browser login verification | [Run report](./superset/run-report.md) · [Screenshot](./superset/screenshot-superset.png) · [Issues](./superset/issues.md) |
 | [AIMarket](./aimarket/) | Node.js API, React client, SQLite, Azure AI Search, Foundry chat, Container Apps, and ACR | [Run report](./aimarket/run-report.md) · [Screenshot](./aimarket/screenshot-aimarket.png) |
-| [SmartTodo](./smart-todo/) | Azure Functions API, Azure SQL, Foundry-generated steps, and SwiftUI client | [Run report](./smart-todo/run-report.md) |
+| [SmartTodo](./smart-todo/) | Azure Functions API, Azure SQL, Foundry-generated steps, and SwiftUI client | [Run report](./smart-todo/run-report.md) · [Issues](./smart-todo/issues.md) |
 
-The machine-readable summary is in [`run-manifest.json`](./run-manifest.json).
+The machine-readable summary is in [`run-manifest.json`](./run-manifest.json). A second clean-environment deployment pass and its proven repairs are documented in [`PREDICTABILITY-REPORT.md`](./PREDICTABILITY-REPORT.md).
 
 ## Repository layout
 

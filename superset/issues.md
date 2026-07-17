@@ -38,3 +38,13 @@ Any verification following the documented selector verbatim fails at the submit 
 
 ### Suggested fix
 Update `JOURNEY.md` and `superset-azure/SKILL.md` to use a submit selector that matches the FAB form, e.g. `input[type="submit"]` (or a resilient `input[type=submit], button[type=submit]`), and remove the inaccurate "React form / no `name=username`" note.
+
+---
+
+## Issue: clean `azd up` failed when hook-owned secrets weren't pre-seeded
+
+**Status:** Resolved and live-verified in the predictability deployment.
+
+Azure infrastructure, including AKS and PostgreSQL, provisioned successfully. The original post-provision hook then failed because `SUPERSET_SECRET_KEY` and `SUPERSET_ADMIN_PASSWORD` were undocumented required environment values.
+
+The cross-platform Node hook now generates cryptographically random values when either variable is absent, persists them with `azd env set`, never prints them, and reuses existing values on reruns. The repaired hook completed Helm installation, Kubernetes secret creation, Superset rollout, ingress discovery, PostgreSQL verification, `/health` verification, and authenticated browser login.

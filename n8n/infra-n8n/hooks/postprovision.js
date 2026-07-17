@@ -23,6 +23,40 @@ function fail(message) {
   process.exit(1);
 }
 
+const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function waitForRevisionReady(baseUrl) {
+  const deadline = Date.now() + 5 * 60 * 1000;
+  const requiredConsecutiveSuccesses = 6;
+  let consecutiveSuccesses = 0;
+  let lastResult = 'no probe completed';
+  const normalizedUrl = baseUrl.replace(/\/+$/, '');
+
+  while (Date.now() < deadline) {
+    try {
+      const [health, editor] = await Promise.all([
+        fetch(`${normalizedUrl}/healthz`, { redirect: 'follow', cache: 'no-store' }),
+        fetch(normalizedUrl, { redirect: 'follow', cache: 'no-store' }),
+      ]);
+      if (health.status === 200 && editor.status === 200) {
+        consecutiveSuccesses += 1;
+        lastResult = `/healthz=200, editor=200 (${consecutiveSuccesses}/${requiredConsecutiveSuccesses} consecutive)`;
+        if (consecutiveSuccesses >= requiredConsecutiveSuccesses) return;
+      } else {
+        consecutiveSuccesses = 0;
+        lastResult = `/healthz=${health.status}, editor=${editor.status}`;
+      }
+    } catch (err) {
+      consecutiveSuccesses = 0;
+      lastResult = err && err.message ? err.message : String(err);
+    }
+    await sleep(5000);
+  }
+
+  throw new Error(`Replacement revision did not remain ready within 5 minutes (${lastResult}).`);
+}
+
+async function main() {
 const appName = readAzdValue('N8N_CONTAINER_APP_NAME');
 const resourceGroup = readAzdValue('RESOURCE_GROUP_NAME');
 let n8nUrl = readAzdValue('N8N_URL');
@@ -89,4 +123,12 @@ try {
   // Non-fatal: the container env var is the source of truth.
 }
 
-console.log('[postprovision] WEBHOOK_URL configured successfully.');
+console.log('[postprovision] Waiting for the replacement revision and editor UI...');
+await waitForRevisionReady(n8nUrl);
+console.log('[postprovision] WEBHOOK_URL configured and replacement revision is ready.');
+}
+
+main().catch((err) => {
+  console.error(`[postprovision] ${err && err.message ? err.message : err}`);
+  process.exit(1);
+});

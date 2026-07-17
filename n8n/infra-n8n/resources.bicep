@@ -5,6 +5,8 @@ param location string
 param tags object
 
 @description('Unique token for resource naming.')
+@minLength(13)
+@maxLength(13)
 param resourceToken string
 
 @description('Resource name abbreviations.')
