@@ -1,99 +1,65 @@
-# GitHub and Azure Agentic Journeys: Verified Solution
+# GitHub and Azure Agentic Journeys: Verified Solutions
 
-This repository contains the generated solution for all five journeys from [DanWahlin/github-azure-agentic-journeys](https://github.com/DanWahlin/github-azure-agentic-journeys). Each journey was generated in isolation, built, tested, deployed to Azure, verified against the live deployment, and then torn down.
+This repository contains runnable solutions for the five journeys in [github-azure-agentic-journeys](https://github.com/DanWahlin/github-azure-agentic-journeys). Use a solution to compare your work or deploy the completed application.
 
-> All Azure resource groups created by this run were deleted after verification. URLs and resource names in the reports are historical evidence, not active services.
+> [!CAUTION]
+> Azure resources cost money. Each runbook includes cleanup steps. The URLs and resource names in the reports are historical. The original test resources were deleted.
 
-## Results
+## Requirements
 
-| Journey | Generated solution | Verification evidence |
-|---|---|---|
-| [Grafana](./grafana/) | Bicep, `azd`, Container Apps configuration, hooks, and browser automation | [Run report](./grafana/run-report.md) · [Screenshot](./grafana/screenshot-grafana.png) |
-| [n8n](./n8n/) | Pinned n8n 2.30.6 deployment with PostgreSQL, health probes, and owner onboarding | [Run report](./n8n/run-report.md) · [Screenshot](./n8n/screenshot-n8n.png) · [Issues](./n8n/issues.md) |
-| [Superset](./superset/) | AKS, PostgreSQL, Helm/Kubernetes configuration, and browser login verification | [Run report](./superset/run-report.md) · [Screenshot](./superset/screenshot-superset.png) · [Issues](./superset/issues.md) |
-| [AIMarket](./aimarket/) | Node.js API, React client, SQLite, Azure AI Search, Foundry chat, Container Apps, and ACR | [Run report](./aimarket/run-report.md) · [Screenshot](./aimarket/screenshot-aimarket.png) |
-| [SmartTodo](./smart-todo/) | Azure Functions API, Azure SQL, Foundry-generated steps, and SwiftUI client | [Run report](./smart-todo/run-report.md) · [Issues](./smart-todo/issues.md) |
+Install these tools on Windows, macOS, or Linux:
 
-The machine-readable summary is in [`run-manifest.json`](./run-manifest.json). A second clean-environment deployment pass and its proven repairs are documented in [`PREDICTABILITY-REPORT.md`](./PREDICTABILITY-REPORT.md).
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
+- [Azure Developer CLI (`azd`)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) 1.28.0 or later
+- [Node.js](https://nodejs.org/en/download) 24 LTS or later
 
-## Repository layout
+Run these checks:
 
 ```text
-.github/          Agents, reusable skills, portable runners, and verification scripts
-grafana/          Generated Grafana infrastructure and evidence
-n8n/              Generated n8n infrastructure and evidence
-superset/         Generated Superset infrastructure and evidence
-aimarket/         Generated full-stack marketplace, infrastructure, tests, and evidence
-smart-todo/       Generated Functions API, SwiftUI client, infrastructure, tests, and evidence
-docs/             Cross-platform tool installation guidance
-SOURCE-README.md  README from the source journeys repository
-```
-
-## Local validation
-
-Prerequisites and Windows, macOS, and Linux installation options are documented in [`docs/tool-installation.md`](./docs/tool-installation.md).
-
-### AIMarket
-
-```bash
-cd aimarket/api
-npm ci
-npm run build
-npm test
-
-cd ../client
-npm ci
-npm run build
-npm test
-```
-
-### SmartTodo API and Swift contract
-
-```bash
-cd smart-todo/src/api
-npm ci
-npm run build
-npm test
-
-cd ../ios
-node scripts/contract-check.mjs
-node scripts/swift-static-check.mjs
-```
-
-The SwiftUI source and API contract were validated on Linux ARM64. Building or running the iOS app requires macOS with Xcode.
-
-## Deployment
-
-Each journey contains its own `azure.yaml`, Bicep, hooks, prompts, and run report. Use a new `azd` environment and your own Azure subscription rather than the historical environment names in the reports.
-
-Before deploying, authenticate and let `azd` reuse Azure CLI authentication:
-
-```text
+az version
+azd version
+node --version
 az login
-az account show
+az account show --output table
 azd config set auth.useAzCliAuth true
 ```
 
-Azure resources cost money. Tear down a journey as soon as verification is complete:
+## Run a solution
+
+Clone the repository, then open the runbook for one solution.
 
 ```text
-azd down --force --purge
+git clone https://github.com/DanWahlin/github-azure-agentic-journeys-solution.git
+cd github-azure-agentic-journeys-solution
 ```
 
-## Security and publication hygiene
+| Solution | Azure services | Additional host tools | Runbook |
+| --- | --- | --- | --- |
+| Grafana | Container Apps, Log Analytics | None | [Run Grafana](./grafana/README.md) |
+| n8n | Container Apps, PostgreSQL | npm dependencies for browser verification | [Run n8n](./n8n/README.md) |
+| Superset | AKS, PostgreSQL, Load Balancer | `kubectl`, Helm 3 | [Run Superset](./superset/README.md) |
+| AIMarket | Container Apps, ACR, AI Search, Foundry | Docker with Buildx | [Run AIMarket](./aimarket/README.md) |
+| SmartTodo | Azure Functions, Azure SQL, Foundry | Functions Core Tools v4, Go-based `sqlcmd` | [Run SmartTodo](./smart-todo/README.md) |
 
-- Azure Developer CLI state under `.azure/`, environment files, logs, local databases, private keys, and package-manager credentials are excluded by `.gitignore`.
-- The Azure subscription identifier was redacted from publishable reports and prompts.
-- Git history and the exact publishable tree were scanned with Gitleaks before publication.
-- No credentials, API keys, passwords, tokens, connection strings, or private keys are committed.
+The runbooks list the environment values, deployment command, verifier, and cleanup check for each solution.
 
-## Notes
+## Check the application code
 
-- The solutions were generated and live-tested on Linux ARM64.
-- Host-facing scripts use Node.js and argument arrays for Windows, macOS, and Linux portability.
-- Playwright uses bundled Chromium rather than assuming branded Chrome is available.
-- `SOURCE-README.md` preserves the original journey overview. The generated folders in this repository are the completed solutions.
+Use these component guides when you want to build or test the application without deploying it:
+
+- [AIMarket API and client](./aimarket/README.md#check-the-code)
+- [SmartTodo API and iOS contract](./smart-todo/README.md#check-the-code)
+
+## Previous run results
+
+All five solutions were deployed and checked against live Azure resources. Those resources were then deleted. See:
+
+- [`PREDICTABILITY-REPORT.md`](./PREDICTABILITY-REPORT.md)
+- [`run-manifest.json`](./run-manifest.json)
+- Each solution's `run-report.md`
+
+Local Azure state, credentials, logs, databases, and private keys are excluded from Git. Do not commit values stored in an `azd` environment.
 
 ## License
 
-This repository retains the source project's [MIT License](./LICENSE).
+[MIT](./LICENSE)
