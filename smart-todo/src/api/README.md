@@ -37,7 +37,7 @@ Never commit real credentials — `local.settings.json` is gitignored.
 ## Commands
 
 ```bash
-npm install
+npm ci
 npm run build          # tsc -> dist/functions/*.js
 npm test               # node:test suite (uses in-memory repository double)
 npm run seed           # idempotent Azure SQL seed

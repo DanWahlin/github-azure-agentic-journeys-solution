@@ -13,7 +13,7 @@ React 18 + TypeScript + Vite + Tailwind CSS storefront for the AIMarket API.
   quantity selector (1–10), Add to Cart, out-of-stock handling.
 - **Cart** (`/cart`) — editable quantities, line totals, subtotal/item count, Place Order
   (calls `POST /orders`), order confirmation, empty-cart state.
-- **ChatWidget** — floating assistant showing a Phase 3 "coming soon" placeholder (not wired).
+- **ChatWidget:** floating shopping assistant that sends the full conversation to `POST /api/chat`.
 - Loading skeletons/spinners and typed error states throughout.
 
 ## Configuration
@@ -34,7 +34,7 @@ See `.env.example`.
 ## Commands
 
 ```bash
-npm install
+npm ci
 npm run build     # type-check + vite build
 npm test          # vitest (unit + component tests)
 npm run preview   # serve the production build
