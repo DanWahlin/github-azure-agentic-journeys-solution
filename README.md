@@ -37,8 +37,8 @@ cd github-azure-agentic-journeys-solution
 | --- | --- | --- | --- |
 | Grafana | Container Apps, Log Analytics | None | [Run Grafana](./grafana/README.md) |
 | n8n | Container Apps, PostgreSQL | npm dependencies for browser verification | [Run n8n](./n8n/README.md) |
-| Superset | AKS, PostgreSQL, Load Balancer | `kubectl`, Helm 3 | [Run Superset](./superset/README.md) |
-| AIMarket | Container Apps, ACR, AI Search, Foundry | Docker with Buildx | [Run AIMarket](./aimarket/README.md) |
+| Superset | AKS, PostgreSQL, Load Balancer | None | [Run Superset](./superset/README.md) |
+| AIMarket | Container Apps, ACR, AI Search, Foundry | None | [Run AIMarket](./aimarket/README.md) |
 | SmartTodo | Azure Functions, Azure SQL, Foundry | Functions Core Tools v4, Go-based `sqlcmd` | [Run SmartTodo](./smart-todo/README.md) |
 
 The runbooks list the environment values, deployment command, verifier, and cleanup check for each solution.

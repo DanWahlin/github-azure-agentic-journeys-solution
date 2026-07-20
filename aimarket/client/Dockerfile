@@ -1,9 +1,6 @@
-# AIMarket storefront — multi-stage build.
-# The static Vite/esbuild build runs NATIVELY on the build host via
-# $BUILDPLATFORM (esbuild ships no reliable emulated binary for ARM64->AMD64),
-# while the final nginx runtime image targets the requested platform
-# (linux/amd64 for Azure Container Apps). VITE_API_URL is baked in at build time.
-FROM --platform=$BUILDPLATFORM node:24-alpine AS build
+# AIMarket storefront multi-stage build. Azure Container Registry builds the
+# image as linux/amd64. VITE_API_URL is baked in at build time.
+FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
