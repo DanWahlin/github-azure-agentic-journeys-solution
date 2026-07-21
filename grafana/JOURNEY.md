@@ -26,7 +26,7 @@ In this agentic journey, you'll deploy [Grafana OSS](https://grafana.com/oss/gra
 > - Node.js 24 LTS or later for portable verification scripts
 > - An Azure subscription with permission to create resource groups and Container Apps
 >
-> See the [cross-platform installation guide](../../docs/tool-installation.md) for Windows, macOS, and Linux setup and verification commands.
+> See the [cross-platform installation guide](../docs/tool-installation.md) for Windows, macOS, and Linux setup and verification commands.
 
 > [!NOTE]
 > Use [GitHub Copilot CLI](https://github.com/features/copilot/cli), the [GitHub Copilot app](https://github.com/features/ai/github-app), or another agentic coding tool. For other tools, run: **"Copy or adapt this repository's `.github/skills` into your supported skills or instructions location, preserving their behavior and reporting anything unsupported."**
@@ -79,10 +79,10 @@ You'll use `oss-to-azure-deployer` (a custom agent defined in this repo) with Gi
 
 ### Step 1: Setup
 
-Make sure you're in the repo root first:
+Run the following steps from the solution repository root. If you're in the parent directory that contains the clone, enter it first:
 
-```bash
-cd github-azure-agentic-journeys
+```text
+cd github-azure-agentic-journeys-solution
 ```
 
 Then start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/cli-getting-started); the app and VS Code agent chat work the same — type the prompts without the leading `>`:
@@ -91,7 +91,7 @@ Then start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.gi
 copilot
 ```
 
-If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../../README.md#quick-start)):
+If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../README.md#quick-start)):
 
 ```
 > /plugin marketplace add microsoft/azure-skills
@@ -349,7 +349,7 @@ Explore the other journeys:
 - [Superset](../superset/README.md) — AKS, init containers (higher cost)
 - [AIMarket](../aimarket/README.md) — full-stack build from a PLAN.md spec with Foundry
 
-> 📚 **All journeys:** [Back to root README](../../README.md#agentic-journeys)
+> 📚 **All journeys:** [Back to root README](../README.md#agentic-journeys)
 
 ---
 

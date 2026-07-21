@@ -26,7 +26,7 @@ aimarket/
 ├── azure.yaml                     # azd config: api service + postprovision/postdeploy hooks
 ├── api/Dockerfile                 # multi-stage node:24-alpine (compiles better-sqlite3 for amd64)
 ├── api/.dockerignore
-├── client/Dockerfile              # FROM --platform=$BUILDPLATFORM builder + nginx runtime
+├── client/Dockerfile              # ACR-compatible Node builder + nginx runtime
 ├── client/nginx.conf              # SPA try_files; NO /api proxy block
 ├── client/.dockerignore
 └── infra/
@@ -36,7 +36,7 @@ aimarket/
     ├── main.parameters.json
     └── hooks/
         ├── postprovision.js       # CommonJS: set configuration.registries identity=system
-        └── postdeploy.js          # CommonJS: rebuild web with VITE_API_URL, buildx --push, update
+        └── postdeploy.js          # CommonJS: ACR-build web with VITE_API_URL, then update
 ```
 
 App code change (Phase 4): `api/src/ai/search.ts` gained `ensureSearchIndex()` (creates the
@@ -83,12 +83,10 @@ instead of AVM modules for a deterministic single-shot deploy (no registry resto
    both apps now show `registries[0].identity = system` and pull private images successfully.
 
 3. **ACR build task cannot parse `FROM --platform=$BUILDPLATFORM`.**
-   Both azd `remoteBuild` and `az acr build` run ACR's classic dependency scanner, which errors with
-   `unable to understand line FROM --platform=$BUILDPLATFORM`. The frontend Dockerfile **requires**
-   `$BUILDPLATFORM` (keeps Vite/esbuild native on ARM64; final nginx stage is COPY-only). **Fix:** the
-   API (no `$BUILDPLATFORM`) builds on ACR via azd `remoteBuild`; the **web** image is built by
-   `infra/hooks/postdeploy.js` with local `docker buildx build --platform linux/amd64 --provenance=false --push`.
-   The builder stage runs native on ARM64 and the COPY-only final stage needs **no** QEMU emulation.
+   Both azd `remoteBuild` and `az acr build` use ACR's dependency scanner, which rejected that expression.
+   **Final fix:** remove `$BUILDPLATFORM` from the frontend Dockerfile. The API builds through azd with
+   `docker.remoteBuild: true`; `infra/hooks/postdeploy.js` builds the web image with
+   `az acr build --platform linux/amd64`. No local Docker, Buildx, QEMU, or binfmt setup is required.
 
 4. **azd cross-platform local build didn't load the image for tagging** (`No such image: sha256:…`).
    A short-lived attempt to let azd build web locally failed at the tag step. **Fix:** web is not an azd

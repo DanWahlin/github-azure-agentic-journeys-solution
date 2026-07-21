@@ -154,7 +154,7 @@ Configure the journey E2E repository variables and secrets interactively with `n
 Each journey contains its own infrastructure. For OSS deployments, infrastructure is generated fresh by the `azure-prepare` plugin skill. For full-stack journeys, infrastructure lives alongside the application code:
 
 ```
-journeys/<app>/
+<app>/
 ├── README.md
 ├── PLAN.md               # Full-stack journeys only
 ├── azure.yaml
@@ -231,7 +231,7 @@ description: Deploy <App> to Azure. Use when deploying <App> for <purpose>.
 ---
 ```
 
-**Step 2: Create journey directory** in `journeys/<app>/` with a README.md.
+**Step 2: Create journey directory** in `<app>/` with a README.md.
 
 **Step 3: Document app quirks** -- required env vars, health probe timing, database requirements, post-deployment configuration.
 
@@ -239,11 +239,11 @@ description: Deploy <App> to Azure. Use when deploying <App> for <purpose>.
 
 To add a new full-stack journey (e.g., AIMarket):
 
-**Step 1: Create journey directory** in `journeys/<app>/` with README.md and PLAN.md.
+**Step 1: Create journey directory** in `<app>/` with README.md and PLAN.md.
 
 **Step 2: Create any needed skills** in `.github/skills/` for reusable patterns.
 
-**Step 3: Infrastructure** goes in `journeys/<app>/infra/` with Bicep modules.
+**Step 3: Infrastructure** goes in `<app>/infra/` with Bicep modules.
 
 ---
 

@@ -32,7 +32,7 @@ You'll build SmartTodo: an iPhone app where you type a todo like "Prepare Confer
 > - The selected API runtime if you choose Python 3.10+, .NET 8+, or Java 17+ instead of Node.js
 > - Xcode for the iOS simulator on macOS only
 >
-> Run `node --version`, `func --version`, and `sqlcmd --version` before starting. The [cross-platform installation guide](../../docs/tool-installation.md) includes Windows, macOS, and Linux options for Functions Core Tools and `sqlcmd`.
+> Run `node --version`, `func --version`, and `sqlcmd --version` before starting. The [cross-platform installation guide](../docs/tool-installation.md) includes Windows, macOS, and Linux options for Functions Core Tools and `sqlcmd`.
 >
 > ⚠️ **Platform gate:** The full journey, including Phase 2 simulator testing, requires macOS and Xcode. On Windows or Linux, generate and statically verify the SwiftUI source, then complete Phase 1 and Phase 3 and verify the deployed API with HTTP calls. That counts as finishing the Azure path.
 
@@ -147,16 +147,16 @@ SmartTodo is built in three phases, and this README's phases match PLAN.md's pha
 >
 > On Apple Silicon, Windows ARM64, and Linux ARM64, prefer Azure SQL unless AMD64 container execution has already passed preflight. Phase 3 creates the production Azure SQL instance automatically.
 
-Because the default settings use `AzureWebJobsStorage=UseDevelopmentStorage=true`, start Azurite before `func start`. Install and verify it using the [cross-platform tool guide](../../docs/tool-installation.md#azurite).
+Because the default settings use `AzureWebJobsStorage=UseDevelopmentStorage=true`, start Azurite before `func start`. Install and verify it using the [cross-platform tool guide](../docs/tool-installation.md#azurite).
 
 You'll build the API in stages, not all at once. Each step teaches a different aspect of working with GitHub Copilot.
 
 #### Step 1: Set up the project
 
-Create a project directory inside the repo so GitHub Copilot can access the skills and agent definitions in `.github/`:
+From the solution repository root, change to the existing journey directory so GitHub Copilot can access the skills and agent definitions in `.github/`:
 
-```bash
-cd github-azure-agentic-journeys/journeys/smart-todo
+```text
+cd smart-todo
 ```
 
 Start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/cli-getting-started); the app and VS Code agent chat work the same — type the prompts without the leading `>`:
@@ -165,7 +165,7 @@ Start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.github.
 copilot
 ```
 
-If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../../README.md#quick-start)):
+If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../README.md#quick-start)):
 
 ```
 > /plugin marketplace add microsoft/azure-skills
@@ -469,7 +469,7 @@ Deployment may take several minutes. If it fails, ask GitHub Copilot to help dia
 
 Bicep creates the Function App identity, but Azure SQL needs a separate database user and schema step. The generated `infra/hooks/postprovision.js` runs automatically after provisioning and works on Windows, macOS, and Linux. It invokes `sqlcmd` through Node.js, temporarily opens only the current client IP, handles Azure SQL Redirect/Proxy connectivity, applies the schema and seed data, and restores the firewall rule and original connection policy in `finally`.
 
-Check `azd up` for `Post-provision SQL setup complete.` If the hook reports a missing prerequisite, use the [cross-platform installation guide](../../docs/tool-installation.md), verify `node --version` and `sqlcmd --version`, then rerun:
+Check `azd up` for `Post-provision SQL setup complete.` If the hook reports a missing prerequisite, use the [cross-platform installation guide](../docs/tool-installation.md), verify `node --version` and `sqlcmd --version`, then rerun:
 
 ```text
 node infra/hooks/postprovision.js
@@ -725,7 +725,7 @@ Explore the other journeys:
 - [Superset](../superset/README.md) — AKS deep dive
 - Deploy another OSS app with `@oss-to-azure-deployer`
 
-> 📚 **All journeys:** [Back to root README](../../README.md#agentic-journeys)
+> 📚 **All journeys:** [Back to root README](../README.md#agentic-journeys)
 
 ---
 

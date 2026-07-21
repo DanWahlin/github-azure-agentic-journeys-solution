@@ -44,16 +44,9 @@ services:
       path: api/Dockerfile
       context: api
       remoteBuild: true
-  web:
-    host: containerapp
-    language: ts
-    docker:
-      path: client/Dockerfile
-      context: client
-      remoteBuild: true
 ```
 
-**Without `language`:** `azd up` fails with "must specify language or image". **Without `remoteBuild: true`:** `azd` can require a local Docker daemon.
+Declare each service whose image azd owns this way. AIMarket declares only `api`; Bicep creates its web Container App and the project postdeploy hook owns the storefront ACR build and update. **Without `language`:** `azd up` fails with "must specify language or image". **Without `remoteBuild: true`:** `azd` can require a local Docker daemon.
 
 ### Cross-platform hooks
 
@@ -67,7 +60,7 @@ hooks:
     run: infra/hooks/postdeploy.js
 ```
 
-Use `postprovision` for steps that need infrastructure outputs, such as setting `WEBHOOK_URL`. Use `postdeploy` for steps that need deployed services, such as rebuilding a frontend with its API URL. Hook code must invoke `az` and `azd` through argument arrays, never interpolated shell command strings. On macOS and Linux, call the CLI executable directly. On Windows, `.cmd` shims cannot be launched with `execFileSync()` or `spawnSync()` alone. Invoke a static, non-interpolated `powershell.exe` runner and pass the command plus arguments as a JSON environment payload, then use PowerShell's call operator with array splatting. Build deployment images in Azure Container Registry so the host does not need Docker or Buildx.
+Use `postprovision` for steps that need infrastructure outputs, such as setting `WEBHOOK_URL`. Use `postdeploy` for steps that need deployed services, such as rebuilding a frontend with its API URL. Hook code must invoke `az` and `azd` through argument arrays, never interpolated shell command strings. On macOS and Linux, call the CLI executable directly. On Windows, `.cmd` shims cannot be launched with `execFileSync()` or `spawnSync()` alone. Invoke a static, non-interpolated `powershell.exe` runner and pass the command plus arguments as a JSON environment payload, then use PowerShell's call operator with array splatting. This supports both the Azure CLI shim and the `azd.exe` installation without exposing arguments to shell parsing. Build deployment images in Azure Container Registry so the host does not need Docker or Buildx.
 
 ## SPA Frontend Deployment (React/Vite)
 
@@ -93,7 +86,7 @@ hooks:
 
 The JavaScript hook must:
 
-1. Resolve the application root with `import.meta.url` and `fileURLToPath()` rather than assuming the current working directory.
+1. Resolve the application root from CommonJS `__dirname` rather than assuming the current working directory.
 2. Read `API_URL`, `AZURE_CONTAINER_REGISTRY_ENDPOINT`, and `RESOURCE_GROUP_NAME` with `azd env get-value`.
 3. Find the web Container App by its `azd-service-name=web` tag.
 4. Run `az acr build` with `--platform linux/amd64`, a unique image tag, and `--build-arg VITE_API_URL=<API_URL>/api`.
@@ -124,7 +117,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 ```
 
-**Keys:** `ARG` + `ENV` must appear **before** `RUN npm run build` so Vite picks up the URL. ACR performs the build on `linux/amd64`, so host architecture and local emulation are irrelevant.
+**Keys:** `ARG` + `ENV` must appear **before** `RUN npm run build` so Vite picks up the URL. The postdeploy hook sends this Dockerfile to an ACR `linux/amd64` cloud build.
 
 ### nginx.conf — SPA Only
 
@@ -161,6 +154,10 @@ Azure Container Apps runs Linux AMD64. This applies to Apple Silicon, Windows AR
 Require ACR cloud builds targeting `linux/amd64`. Do not require Docker, Buildx, AMD64 emulation, or privileged QEMU/binfmt handlers on the host.
 
 Without an AMD64 target, the container can crash with `exec format error`. ACR builds remove that host-architecture dependency.
+
+## Bicep `uniqueString()` Length Contracts
+
+Azure's `uniqueString()` always returns 13 characters. When passing that value into a module, declare the module parameter with both `@minLength(13)` and `@maxLength(13)`. Otherwise Bicep can emit false `BCP334` warnings when the parameter is used in constrained resource names.
 
 ## Bicep Output Naming Convention
 

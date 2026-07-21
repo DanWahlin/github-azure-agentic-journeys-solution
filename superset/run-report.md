@@ -2,6 +2,8 @@
 
 **Result:** ✅ SUCCESS — Superset deployed to Azure Kubernetes Service, verified with live requests and browser login, and deleted after verification.
 
+> **Current contract:** The metadata below records the original run. The checked-in deployment now runs Helm and `kubectl` inside Azure through AKS run command. The host requires Azure CLI, Azure Developer CLI, and Node.js, not local Helm or `kubectl`.
+
 ## Run Metadata
 
 | Field | Value |
@@ -34,7 +36,7 @@ infra-superset/
   main.bicep                            # subscription scope; creates RG rg-<env>
   resources.bicep                       # RG scope: Log Analytics, PostgreSQL, AKS (raw Microsoft.*)
   main.parameters.json
-  hooks/postprovision.mjs               # az aks get-credentials, Helm NGINX, kubectl, LB poll, rollout
+  hooks/postprovision.mjs               # AKS run command: Helm NGINX, manifests, LB poll, rollout
   manifests/00-namespace.yaml
   manifests/10-configmap.yaml           # superset_config.py bridge (env -> SQLALCHEMY_DATABASE_URI)
   manifests/20-deployment.yaml          # init+main, shared emptyDir psycopg2, probes
@@ -50,11 +52,11 @@ run-report.md, issues.md
 
 | Phase | Result | Evidence |
 |---|---|---|
-| Preflight (tools, auth, quota) | PASS | node/az/azd/kubectl/helm present; sub authenticated; DSv3 quota 4/20 used → 16 free (need 4); providers registered |
+| Preflight (tools, auth, quota) | PASS | node/az/azd present; sub authenticated; DSv3 quota 4/20 used → 16 free (need 4); providers registered |
 | Infra generation | PASS | Bicep + azure.yaml + 5 manifests + portable `.mjs` hook |
 | Validation | PASS | `az bicep build` clean; YAML + embedded `superset_config.py` parsed/compiled; hook `node --check` OK |
 | azd up (provision) | PASS | 10m24s — RG, Log Analytics, PostgreSQL (5m5s), AKS (5m4s) |
-| Postprovision hook | PASS | Helm NGINX installed; secret + manifests applied; rollout completed; LB IP `20.253.212.180`; `SUPERSET_URL` set |
+| Postprovision hook | PASS | AKS run command installed Helm NGINX, applied secret + manifests, completed rollout, discovered the LB IP, and set `SUPERSET_URL` |
 | Verification | PASS | 6/6 checks (see below) |
 | Browser login | PASS | Reached `/superset/welcome/`; screenshot captured |
 
@@ -79,7 +81,7 @@ PASS  GET /health returns HTTP 200 — status=200 body=OK
 - ✅ AKS system pool created with **no availability zones** (property omitted) — safe for westus.
 - ✅ Shared `emptyDir` psycopg2 pattern: init installs `psycopg2-binary --target=/psycopg2-lib`; both containers set `PYTHONPATH=/psycopg2-lib` and mount the shared volume.
 - ✅ Secure credentials generated with Node `crypto` (POSTGRES_PASSWORD, SUPERSET_SECRET_KEY, SUPERSET_ADMIN_PASSWORD), pinned in azd env, never printed or committed. K8s secret created at deploy time by the hook — no plaintext secret files.
-- ✅ Portable hook: `postprovision.mjs` uses `spawnSync` argument arrays for az/helm/kubectl; no `.sh`, `shell: sh`, `chmod`, command substitution, or pipelines.
+- ✅ Portable hook: `postprovision.mjs` invokes `az`/`azd` with argument arrays and runs Helm/`kubectl` inside Azure through AKS run command. Windows uses the static PowerShell JSON-payload launcher; macOS/Linux invoke CLIs directly.
 - ✅ Validation before `azd up` (Bicep build, manifest parse, hook syntax).
 - ✅ All artifacts generated inside `superset/`; no resources touched outside `rr-superset-0717` / `rg-rr-superset-0717`.
 

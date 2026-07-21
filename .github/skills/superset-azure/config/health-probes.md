@@ -151,7 +151,7 @@ initContainers:
 
 ## Verifying Health Probes
 
-Run `node .github/scripts/verify-superset.mjs`. For diagnosis, use `kubectl get pods -n superset -w`, `kubectl describe pod -n superset <pod-name>`, and `kubectl exec -n superset <pod> -- curl -s localhost:8088/health`. If using port-forward, run `kubectl port-forward -n superset <pod> 8088:8088` in its own terminal instead of relying on host-specific background operators.
+Run `node .github/scripts/verify-superset.mjs`. For extra diagnostics, pass one bounded command at a time through `node .github/scripts/run-aks-command.mjs "<kubectl-command>"`. The runner executes `kubectl` inside Azure and fails unless AKS reports `Succeeded` with an explicitly present numeric zero exit code. Do not invoke local `kubectl`, use `-w`, or open a host-side port-forward.
 
 ## Common Health Probe Issues
 
@@ -165,9 +165,11 @@ Run `node .github/scripts/verify-superset.mjs`. For diagnosis, use `kubectl get 
 
 ## Debugging Commands
 
-```bash
-# Watch pod status
-kubectl get pods -n superset -w
+Each `kubectl` line below is command text to pass through the checked-in runner, as described above. Do not run the block directly on the host.
+
+```text
+# Get a pod-status snapshot
+kubectl get pods -n superset
 
 # Check all events
 kubectl get events -n superset --sort-by='.lastTimestamp'
