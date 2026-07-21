@@ -3,8 +3,8 @@
  *
  * The React storefront needs the API's public URL baked in at BUILD time
  * (Vite inlines `VITE_API_URL`). The API URL is not known until after
- * provisioning, so azd's initial `web` image is built with the default
- * `/api` base and cannot reach the API. This hook rebuilds the web image
+ * provisioning. Bicep creates the web Container App with a public placeholder
+ * image. This hook builds the production web image
  * with the real `VITE_API_URL=<API_URL>/api` through an Azure Container
  * Registry cloud build, pushes it to ACR, updates
  * the web Container App, waits for the new revision, and verifies the
@@ -14,8 +14,8 @@
  * interpolation). Path handling, retries, timestamps and JSON parsing are
  * done in JavaScript so the hook works on Windows, macOS and Linux.
  *
- * A filtered deploy (`azd deploy web`) can skip project-level hooks; run this
- * file directly afterwards:  node infra/hooks/postdeploy.js
+ * For a storefront-only rebuild, run this file directly:
+ * node infra/hooks/postdeploy.js
  */
 'use strict';
 

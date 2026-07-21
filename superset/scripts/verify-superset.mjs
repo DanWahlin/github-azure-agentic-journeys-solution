@@ -5,10 +5,10 @@ import { spawnSync } from 'node:child_process';
 const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
 const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
 
-function run(cmd, args, { allowFail = false } = {}) {
+function run(cmd, args) {
   const res = spawnSync(cmd, args, { encoding: 'utf8' });
   if (res.error) throw res.error;
-  if (!allowFail && res.status !== 0) {
+  if (res.status !== 0) {
     throw new Error(`Command failed (${res.status}): ${cmd} ${args.join(' ')}\n${res.stderr || ''}`);
   }
   return res;
@@ -19,7 +19,7 @@ function azdEnv() {
   return JSON.parse(res.stdout);
 }
 
-function aksCommand(env, command, { allowFail = false } = {}) {
+function aksCommand(env, command) {
   const res = run(azExe, [
     'aks', 'command', 'invoke',
     '--resource-group', env.AZURE_RESOURCE_GROUP,
@@ -27,18 +27,16 @@ function aksCommand(env, command, { allowFail = false } = {}) {
     '--command', command,
     '--output', 'json',
     '--only-show-errors',
-  ], { allowFail });
-  if (res.status !== 0) return '';
+  ]);
 
   let result;
   try {
     result = JSON.parse(res.stdout);
   } catch {
-    if (allowFail) return '';
     throw new Error(`AKS command returned invalid JSON: ${(res.stdout || '').slice(0, 500)}`);
   }
-  if (result.exitCode !== 0 && !allowFail) {
-    throw new Error(`Remote AKS command failed (${result.exitCode}):\n${result.logs || result.reason || ''}`);
+  if (result.provisioningState !== 'Succeeded' || Number(result.exitCode) !== 0) {
+    throw new Error(`Remote AKS command failed (${result.exitCode ?? 'unknown'}):\n${result.logs || result.reason || ''}`);
   }
   return result.logs || '';
 }
@@ -59,7 +57,7 @@ async function main() {
 
   const podsJson = JSON.parse(aksCommand(
     env,
-    "kubectl get pods -n superset -l app=superset -o json"
+    'kubectl get pods -n superset -l app=superset -o json'
   ));
   if (!podsJson.items.length) {
     record('Superset pod exists', false, 'no pods found');
@@ -79,23 +77,20 @@ async function main() {
 
   const initLogs = aksCommand(
     env,
-    `kubectl logs -n superset ${podName} -c superset-init`,
-    { allowFail: true }
+    `kubectl logs -n superset ${podName} -c superset-init`
   );
   record('Init logs contain PostgresqlImpl', /PostgresqlImpl/.test(initLogs));
   record('Init logs have no SQLiteImpl fallback', !/SQLiteImpl/.test(initLogs));
 
   const mainLogs = aksCommand(
     env,
-    `kubectl logs -n superset ${podName} -c superset`,
-    { allowFail: true }
+    `kubectl logs -n superset ${podName} -c superset`
   );
   record('Main logs have no SQLiteImpl fallback', !/SQLiteImpl/.test(mainLogs));
 
   const psycopg = aksCommand(
     env,
-    `kubectl exec -n superset ${podName} -c superset -- python -c 'import psycopg2; print("OK")'`,
-    { allowFail: true }
+    `kubectl exec -n superset ${podName} -c superset -- python -c 'import psycopg2; print("OK")'`
   );
   record('psycopg2 importable in main container', /OK/.test(psycopg));
 

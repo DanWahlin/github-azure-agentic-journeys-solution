@@ -26,18 +26,16 @@
 >
 > - Azure CLI, Azure Developer CLI 1.28.0+, and an agentic coding tool
 > - Node.js 24 LTS or later for the cross-platform post-provision hook
-> - `kubectl` for AKS management
-> - Helm 3 for the NGINX Ingress Controller
 > - Subscription quota of at least **4 vCPUs** in the target region
 >
-> Run `node --version`, `kubectl version --client`, and `helm version` before starting. See the [cross-platform installation guide](../../docs/tool-installation.md) for Windows, macOS, and Linux options.
+> Run `az version`, `azd version`, and `node --version` before starting. The hook runs Helm and `kubectl` inside Azure through AKS run command. See the [cross-platform installation guide](../docs/tool-installation.md) for Windows, macOS, and Linux options.
 
 > [!NOTE]
 > Use [GitHub Copilot CLI](https://github.com/features/copilot/cli), the [GitHub Copilot app](https://github.com/features/ai/github-app), or another agentic coding tool. For other tools, run: **"Copy or adapt this repository's `.github/skills` into your supported skills or instructions location, preserving their behavior and reporting anything unsupported."**
 
 ### Done when
 
-- [ ] `kubectl get pods -n superset` shows Ready 1/1
+- [ ] The checked-in verifier reports the Superset pod as Ready 1/1 through AKS run command
 - [ ] Init logs show `PostgresqlImpl` (not SQLite)
 - [ ] `$SUPERSET_URL/health` returns HTTP 200
 - [ ] Browser login works
@@ -124,7 +122,7 @@ Then start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.gi
 copilot
 ```
 
-If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../../README.md#quick-start)):
+If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../README.md#quick-start)):
 
 ```
 > /plugin marketplace add microsoft/azure-skills
@@ -150,8 +148,9 @@ Tell the agent what you want in a single prompt (OSS shared recipe: location + s
 ```
 > Deploy Apache Superset to Azure using Bicep and azd. Set the location to westus,
 > generate secure passwords for all credentials, use AKS (not Container Apps),
-> generate infra-superset/hooks/postprovision.js for az aks get-credentials,
-> Helm, kubectl apply, and load-balancer polling without shell-specific syntax,
+> generate infra-superset/hooks/postprovision.js to attach the manifests to
+> az aks command invoke, run Helm and kubectl inside Azure, and poll the
+> load balancer without requiring those tools on the host,
 > resolve any issues that come up, and log problems to issues.md.
 ```
 
@@ -162,7 +161,7 @@ The agent handles the entire deployment:
 3. Generates Bicep (Azure's infrastructure-as-code language) + Kubernetes infrastructure in `infra-superset/`
 4. Updates `azure.yaml`, registers Azure providers, sets environment variables
 5. Runs `azd up`
-6. Runs `infra-superset/hooks/postprovision.js`, a cross-platform Node.js hook that calls Helm and `kubectl` with argument arrays, applies the Kubernetes manifests, and waits for the external IP
+6. Runs `infra-superset/hooks/postprovision.js`, a cross-platform Node.js hook that uses `az aks command invoke` to run Helm and `kubectl` inside Azure, applies the Kubernetes manifests, and waits for the external IP
 
 > ⏳ **While you wait:** This deployment can take awhile. AKS cluster creation alone takes several minutes. Put the time to good use:
 >
@@ -449,7 +448,7 @@ Explore the other journeys:
 
 Or keep going with OSS: ask `@oss-to-azure-deployer` *"How would I deploy Gitea to Azure?"*
 
-> 📚 **All journeys:** [Back to root README](../../README.md#agentic-journeys)
+> 📚 **All journeys:** [Back to root README](../README.md#agentic-journeys)
 
 ---
 

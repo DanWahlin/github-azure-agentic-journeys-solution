@@ -60,6 +60,7 @@ function encode(value) {
 
 function makeRemoteBundle({ databaseUri, secretKey, adminPassword }) {
   const stagingDir = mkdtempSync(join(tmpdir(), 'superset-aks-'));
+  chmodSync(stagingDir, 0o700);
   const manifestNames = [
     '00-namespace.yaml',
     '10-configmap.yaml',
@@ -99,53 +100,102 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \\
 kubectl apply -f 00-namespace.yaml
 kubectl apply -f 10-configmap.yaml
 kubectl apply -f superset-secrets.yaml
+rm -f superset-secrets.yaml
 kubectl apply -f 20-deployment.yaml
 kubectl apply -f 30-service.yaml
 kubectl apply -f 40-ingress.yaml
 kubectl rollout status deployment/superset -n superset --timeout=900s
-
-ip=""
-deadline=$((SECONDS + 600))
-while (( SECONDS < deadline )); do
-  ip=$(kubectl get svc -n ingress-nginx ingress-nginx-controller \\
-    -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-  if [[ -n "$ip" ]]; then break; fi
-  echo "Waiting for NGINX ingress LoadBalancer public IP..."
-  sleep 15
-done
-
-if [[ -z "$ip" ]]; then
-  echo "Timed out waiting for LoadBalancer public IP" >&2
-  exit 1
-fi
-
-echo "SUPERSET_URL=http://$ip"
 `, { mode: 0o700 });
   chmodSync(scriptPath, 0o700);
   return stagingDir;
 }
 
-function invokeRemoteDeployment(resourceGroup, clusterName, stagingDir) {
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseResult(output, context) {
+  let result;
+  try {
+    result = JSON.parse(output);
+  } catch {
+    throw new Error(`${context} returned invalid JSON: ${(output || '').slice(0, 500)}`);
+  }
+  return result;
+}
+
+async function invokeRemoteDeployment(resourceGroup, clusterName, stagingDir) {
   const res = run(azExe, [
     'aks', 'command', 'invoke',
     '--resource-group', resourceGroup,
     '--name', clusterName,
     '--command', 'bash deploy.sh',
     '--file', '.',
-    '--output', 'json',
+    '--no-wait',
     '--only-show-errors',
   ], { capture: true, cwd: stagingDir });
 
-  let result;
-  try {
-    result = JSON.parse(res.stdout);
-  } catch {
-    throw new Error(`AKS command returned invalid JSON: ${(res.stdout || '').slice(0, 500)}`);
+  const startOutput = `${res.stdout || ''}\n${res.stderr || ''}`;
+  const idMatch = startOutput.match(/command id:\s*([0-9a-f-]+)/i);
+  if (!idMatch) {
+    throw new Error(`AKS command did not return a command ID: ${startOutput.slice(0, 500)}`);
   }
-  if (result.exitCode !== 0) {
-    throw new Error(`Remote AKS deployment failed (${result.exitCode}):\n${result.logs || result.reason || ''}`);
+
+  const commandId = idMatch[1];
+  const deadline = Date.now() + 30 * 60 * 1000;
+  while (Date.now() < deadline) {
+    const resultResponse = run(azExe, [
+      'aks', 'command', 'result',
+      '--resource-group', resourceGroup,
+      '--name', clusterName,
+      '--command-id', commandId,
+      '--output', 'json',
+      '--only-show-errors',
+    ], { capture: true });
+    const resultOutput = `${resultResponse.stdout || ''}\n${resultResponse.stderr || ''}`;
+    if (/status:\s*Running/i.test(resultOutput) && !resultOutput.trimStart().startsWith('{')) {
+      await sleep(10000);
+      continue;
+    }
+    const result = parseResult(resultResponse.stdout, 'AKS command result');
+    if (result.provisioningState === 'Succeeded' && Number(result.exitCode) === 0) {
+      return result;
+    }
+    if (result.provisioningState === 'Failed' ||
+        (result.exitCode !== null && result.exitCode !== undefined && Number(result.exitCode) !== 0)) {
+      throw new Error(`Remote AKS deployment failed (${result.exitCode ?? 'unknown'}):\n${result.logs || result.reason || ''}`);
+    }
+    await sleep(10000);
   }
-  return result.logs || '';
+  throw new Error(`Timed out waiting for AKS command ${commandId}`);
+}
+
+function invokeShortCommand(resourceGroup, clusterName, command) {
+  const res = run(azExe, [
+    'aks', 'command', 'invoke',
+    '--resource-group', resourceGroup,
+    '--name', clusterName,
+    '--command', command,
+    '--output', 'json',
+    '--only-show-errors',
+  ], { capture: true });
+  const result = parseResult(res.stdout, 'AKS command');
+  if (result.provisioningState !== 'Succeeded' || Number(result.exitCode) !== 0) {
+    throw new Error(`Remote AKS command failed (${result.exitCode ?? 'unknown'}):\n${result.logs || result.reason || ''}`);
+  }
+  return (result.logs || '').trim();
+}
+
+async function waitForIngressIp(resourceGroup, clusterName) {
+  const deadline = Date.now() + 10 * 60 * 1000;
+  const command = "kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'";
+  while (Date.now() < deadline) {
+    const ip = invokeShortCommand(resourceGroup, clusterName, command);
+    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip)) return ip;
+    console.log('Waiting for NGINX ingress LoadBalancer public IP...');
+    await sleep(15000);
+  }
+  throw new Error('Timed out waiting for LoadBalancer public IP');
 }
 
 async function main() {
@@ -182,12 +232,9 @@ async function main() {
   const stagingDir = makeRemoteBundle({ databaseUri, secretKey, adminPassword });
   try {
     console.log(`Deploying Superset to AKS '${clusterName}' through Azure run command...`);
-    const logs = invokeRemoteDeployment(resourceGroup, clusterName, stagingDir);
-    const match = logs.match(/^SUPERSET_URL=(https?:\/\/\S+)$/m);
-    if (!match) {
-      throw new Error(`Remote deployment did not return SUPERSET_URL:\n${logs.slice(-2000)}`);
-    }
-    const url = match[1];
+    await invokeRemoteDeployment(resourceGroup, clusterName, stagingDir);
+    const ip = await waitForIngressIp(resourceGroup, clusterName);
+    const url = `http://${ip}`;
     run(azdExe, ['env', 'set', 'SUPERSET_URL', url]);
     console.log('Superset post-provision complete.');
     console.log(`DEPLOYED_URL=${url}`);

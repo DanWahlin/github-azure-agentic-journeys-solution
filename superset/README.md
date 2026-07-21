@@ -2,7 +2,7 @@
 
 Deploy Apache Superset and PostgreSQL to Azure Kubernetes Service (AKS), with an NGINX ingress controller.
 
-Install Node.js 24+. The post-provision hook runs Helm and `kubectl` inside Azure through AKS run command.
+Install Node.js 24+. The post-provision hook runs Helm and `kubectl` inside Azure through AKS run command. The signed-in Azure identity must have permission to invoke AKS run commands.
 
 Run all commands from the `superset` directory.
 
