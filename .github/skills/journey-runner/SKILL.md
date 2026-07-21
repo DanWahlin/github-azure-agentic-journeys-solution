@@ -46,7 +46,7 @@ Only use `leave-running` when the user explicitly requests it.
 
 ## Step 0: Parse the Journey
 
-Read the journey's `README.md`, `PLAN.md` when present, and every associated journey skill. Extract:
+Read the journey's `JOURNEY.md`, `PLAN.md` when present, and every associated journey skill. Treat `README.md` as supporting documentation only. Extract:
 
 - Journey type and phases
 - Prompts to send to Copilot

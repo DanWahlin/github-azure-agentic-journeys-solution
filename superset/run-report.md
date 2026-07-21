@@ -53,7 +53,7 @@ run-report.md, issues.md
 | Phase | Result | Evidence |
 |---|---|---|
 | Preflight (tools, auth, quota) | PASS | node/az/azd present; sub authenticated; DSv3 quota 4/20 used → 16 free (need 4); providers registered |
-| Infra generation | PASS | Bicep + azure.yaml + 5 manifests + portable `.mjs` hook |
+| Infra generation | PASS | Bicep + azure.yaml + 5 manifests + portable CommonJS `.js` hook |
 | Validation | PASS | `az bicep build` clean; YAML + embedded `superset_config.py` parsed/compiled; hook `node --check` OK |
 | azd up (provision) | PASS | 10m24s — RG, Log Analytics, PostgreSQL (5m5s), AKS (5m4s) |
 | Postprovision hook | PASS | AKS run command installed Helm NGINX, applied secret + manifests, completed rollout, discovered the LB IP, and set `SUPERSET_URL` |
