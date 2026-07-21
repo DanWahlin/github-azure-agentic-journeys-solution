@@ -21,18 +21,36 @@
 
 const { execFileSync } = require('node:child_process');
 const path = require('node:path');
-const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
-const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
+
+const WINDOWS_CLI_RUNNER = [
+  "$ErrorActionPreference = 'Stop'",
+  '$payload = ConvertFrom-Json -InputObject $env:AZURE_NATIVE_CLI_PAYLOAD',
+  '$command = [string]$payload[0]',
+  '$arguments = @($payload | Select-Object -Skip 1)',
+  '& $command @arguments',
+  '$ok = $?',
+  '$code = $LASTEXITCODE',
+  'if ($null -ne $code) { exit $code }',
+  'if (-not $ok) { exit 1 }',
+].join('; ');
 
 const APP_ROOT = path.resolve(__dirname, '..', '..');
 const CLIENT_DIR = path.join(APP_ROOT, 'client');
 
 function run(cmd, args, opts = {}) {
-  return execFileSync(cmd, args, {
+  const invocation = process.platform === 'win32'
+    ? {
+        file: 'powershell.exe',
+        args: ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', WINDOWS_CLI_RUNNER],
+        env: { ...process.env, AZURE_NATIVE_CLI_PAYLOAD: JSON.stringify([cmd, ...args]) },
+      }
+    : { file: cmd, args, env: process.env };
+  return execFileSync(invocation.file, invocation.args, {
     stdio: opts.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
     encoding: 'utf8',
     cwd: opts.cwd,
-    env: process.env,
+    env: invocation.env,
+    windowsHide: true,
     maxBuffer: 64 * 1024 * 1024,
   });
 }
@@ -43,7 +61,7 @@ function envValue(name) {
     return process.env[name].trim();
   }
   try {
-    return run(azdExe, ['env', 'get-value', name], { capture: true }).trim();
+    return run('azd', ['env', 'get-value', name], { capture: true }).trim();
   } catch {
     return '';
   }
@@ -113,7 +131,7 @@ async function main() {
   console.log(`[postdeploy] Rebuilding storefront with VITE_API_URL=${viteApiUrl}`);
   console.log(`[postdeploy] ACR cloud build (linux/amd64) -> ${imageRef}`);
 
-  run(azExe, [
+  run('az', [
     'acr', 'build',
     '--registry', acrName,
     '--image', `aimarket-web:${tag}`,
@@ -124,7 +142,7 @@ async function main() {
   ], { cwd: CLIENT_DIR });
 
   console.log(`[postdeploy] Updating web Container App '${webAppName}' to ${imageRef}`);
-  run(azExe, [
+  run('az', [
     'containerapp', 'update',
     '--name', webAppName,
     '--resource-group', resourceGroup,
