@@ -139,7 +139,7 @@ hooks:
     run: ./infra-n8n/hooks/postprovision.js
 ```
 
-The hook must use `child_process.execFileSync()` or `spawnSync()` with argument arrays to call `azd` and `az`; it must not assemble shell command strings. Read the Container App FQDN, set `WEBHOOK_URL=https://<fqdn>`, and fail with a nonzero exit code if either CLI call fails. This works natively on Windows, macOS, and Linux.
+The hook must use argument arrays to call `azd` and `az`; it must not assemble shell command strings. On macOS and Linux, call each executable directly. On Windows, `.cmd` shims cannot be launched through `execFileSync()` or `spawnSync()` alone, so use the static PowerShell runner and JSON environment payload defined by the `container-apps-deployment` skill. Read the Container App FQDN, set `WEBHOOK_URL=https://<fqdn>`, and fail with a nonzero exit code if either CLI call fails.
 
 ## Tear Down
 

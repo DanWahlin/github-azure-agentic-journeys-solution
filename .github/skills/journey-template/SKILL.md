@@ -419,7 +419,7 @@ Supported `host` values: `containerapp`, `aks`, `appservice`, `function`, `stati
 
 **API (Node.js with native deps):**
 ```dockerfile
-FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json* ./
@@ -459,7 +459,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 **Client (React/Vite SPA):**
 ```dockerfile
-FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
@@ -507,7 +507,7 @@ For other languages (.NET, Java, Go, etc.), follow the same multi-stage pattern:
 
 If the frontend bakes in a backend URL at build time, always generate `infra/hooks/postdeploy.js` from the `container-apps-deployment` skill and reference it directly from `azure.yaml`. A filtered service deployment may skip project-level hooks, so document direct `node infra/hooks/postdeploy.js` execution. API-only apps skip postdeploy.
 
-**Any ARM64 host:** Prefer an ACR remote build targeting `linux/amd64`. If a local cross-build is required, verify Buildx and emulation during preflight, keep static builder stages on `$BUILDPLATFORM`, and never install privileged QEMU/binfmt automatically.
+**Any host architecture:** Require ACR cloud builds targeting `linux/amd64`. Do not require local Docker, Buildx, emulation, `$BUILDPLATFORM`, or privileged QEMU/binfmt handlers for deployment.
 
 ### Pre-Deployment Requirements (once per subscription)
 
@@ -559,7 +559,7 @@ hooks:
     run: ./infra/hooks/postprovision.js
 ```
 
-For example, n8n's `WEBHOOK_URL` depends on the Container App URL. The CommonJS `.js` hook resolves paths with `__dirname`, reads outputs with `azd env get-value`, and invokes Azure CLI through `execFileSync()` or `spawnSync()` argument arrays. It must not use Bash variables, PowerShell variables, `chmod`, pipelines, or interpolated shell strings.
+For example, n8n's `WEBHOOK_URL` depends on the Container App URL. The CommonJS `.js` hook resolves paths with `__dirname`, reads outputs with `azd env get-value`, and invokes Azure CLI with argument arrays. It must not use Bash variables, `chmod`, pipelines, or interpolated shell strings. On Windows, the only PowerShell-specific code permitted is the static JSON-payload launcher defined by the `container-apps-deployment` skill; don't invoke `.cmd` shims directly through `execFileSync()` or `spawnSync()`.
 
 ---
 
