@@ -53,6 +53,8 @@ jobs:
               AZURE_RESOURCE_GROUP: 'rg-test',
               AZURE_AKS_CLUSTER_NAME: 'aks-test'
             }));
+          } else if (args[0] === 'env' && args[1] === 'set') {
+            process.exit(0);
           } else if (args[0] === 'stdin') {
             let input = '';
             for await (const chunk of process.stdin) input += chunk;
@@ -127,6 +129,7 @@ jobs:
           @'
           const n8n = require('./n8n/infra-n8n/hooks/postprovision.js');
           const smartTodo = require('./smart-todo/infra/hooks/postprovision.js');
+          const superset = require('./superset/infra-superset/hooks/postprovision.js');
           const safe = ['space value', 'semi;colon', "single'quote", 'brackets[]', 'equals=value'];
           const cmdUnsafe = ['quote"value', 'amp&value', 'pipe|value', 'percent%value', 'paren(value)', 'line\nvalue'];
           for (const [name, run] of [['n8n', n8n.runCli], ['smart-todo', smartTodo.run]]) {
@@ -138,6 +141,13 @@ jobs:
               catch (error) { rejected = /cannot be passed safely/.test(String(error)); }
               if (!rejected) throw new Error(`${name}: unsafe .cmd argument was not rejected: ${JSON.stringify(value)}`);
             }
+          }
+          const adminPassword = superset.generateAdminPassword();
+          if (!/^Aa1_[A-Za-z0-9_-]{32}$/.test(adminPassword)) throw new Error('Unexpected Superset admin-password format');
+          const env = {};
+          const persisted = superset.ensureAzdSecret(env, 'SUPERSET_ADMIN_PASSWORD', () => adminPassword);
+          if (persisted !== adminPassword || env.SUPERSET_ADMIN_PASSWORD !== adminPassword) {
+            throw new Error('Superset admin password was not persisted through azd.cmd');
           }
           '@ | node
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

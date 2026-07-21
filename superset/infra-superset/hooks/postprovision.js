@@ -79,6 +79,11 @@ function ensureAzdSecret(env, name, createValue) {
   return value;
 }
 
+function generateAdminPassword() {
+  // Keep generated values lossless through supported Windows azd.cmd shims.
+  return `Aa1_${randomBytes(24).toString('base64url')}`;
+}
+
 function encode(value) {
   return Buffer.from(value, 'utf8').toString('base64');
 }
@@ -240,7 +245,7 @@ async function main() {
   const adminPassword = ensureAzdSecret(
     env,
     'SUPERSET_ADMIN_PASSWORD',
-    () => `Aa1!${randomBytes(24).toString('base64url')}`
+    generateAdminPassword
   );
 
   for (const [name, value] of Object.entries({
@@ -269,7 +274,11 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err.message || String(err));
-  process.exit(1);
-});
+module.exports = { ensureAzdSecret, generateAdminPassword, run };
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err.message || String(err));
+    process.exit(1);
+  });
+}
