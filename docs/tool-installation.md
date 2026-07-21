@@ -198,5 +198,5 @@ Copy the result into the relevant `azd env set` command. Don't place generated s
 
 - Use `text` fences for single executable commands that are identical across shells.
 - For stateful variables, loops, pipelines, or line continuations, provide both `bash` and `powershell` examples or replace them with a portable Node.js script.
-- Required lifecycle hooks must be JavaScript (`.mjs`) or TypeScript (`.ts`) files referenced directly from `azure.yaml`.
-- Invoke child processes with argument arrays and `shell: false`; don't build interpolated shell strings.
+- Required lifecycle hooks must use supported CommonJS JavaScript (`.js`) or TypeScript (`.ts`) paths referenced directly from `azure.yaml`; azd 1.28.0 rejects bare `.mjs` lifecycle-hook paths.
+- Invoke child processes with argument arrays and `shell: false`; don't build interpolated shell strings. On Windows, route `az` and `azd` through a static `powershell.exe` program with a JSON environment payload, array splatting, and native exit-code propagation because Node cannot directly execute `.cmd` shims. On macOS and Linux, invoke the CLI directly with argument arrays.

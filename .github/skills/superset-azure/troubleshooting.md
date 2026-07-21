@@ -2,6 +2,14 @@
 
 This guide covers common issues when deploying Apache Superset on Azure Kubernetes Service.
 
+Run every `kubectl` or Helm diagnostic in this guide inside Azure through the checked-in fail-closed runner:
+
+```text
+node .github/scripts/run-aks-command.mjs "<kubectl-or-helm-command>"
+```
+
+The runner reads the selected azd environment, invokes AKS run command, and requires `provisioningState: Succeeded` plus an explicitly present numeric `exitCode: 0`. It rejects shell chaining and other control operators. Never execute the payload directly with a host `kubectl` or Helm binary, and never use a diagnostic that prints Kubernetes Secret values or connection strings.
+
 ## Issue 1: psycopg2 Not Found
 
 ### Symptoms
@@ -57,7 +65,7 @@ containers:
 
 ### Verification
 
-Run `node .github/scripts/verify-superset.mjs`, then isolate the import if needed with `kubectl exec -n superset <pod> -c superset -- python -c "import psycopg2; print('OK')"`.
+Run `node .github/scripts/verify-superset.mjs`. To isolate the import, pass `kubectl exec -n superset <pod> -c superset -- python -c "import psycopg2; print('OK')"` through the checked-in runner at the top of this guide.
 
 ---
 
@@ -99,7 +107,7 @@ volumeMounts:
 
 ### Verification
 
-Retrieve the main-container logs with `kubectl logs -n superset <pod> -c superset` and inspect the returned text for `Loaded your LOCAL configuration`. Don't pipe required verification through host-specific `grep` commands.
+Pass `kubectl logs -n superset <pod> -c superset` through the runner above and inspect the returned text for `Loaded your LOCAL configuration`. Don't pipe required verification through host-specific `grep` commands.
 
 ---
 
@@ -133,6 +141,8 @@ See Issue 1 - install psycopg2-binary.
 
 ### Debugging Steps
 
+Each `kubectl` line below is a remote command payload for the runner at the top of this guide, not a host command.
+
 ```text
 # Check init container logs
 kubectl logs -n superset <pod> -c superset-init
@@ -140,8 +150,8 @@ kubectl logs -n superset <pod> -c superset-init
 # Describe pod for events
 kubectl describe pod -n superset <pod>
 
-# Check PostgreSQL from an approved temporary pod without printing credentials in shared logs
-kubectl run -it --rm debug-pg --image=postgres:15 --restart=Never -- psql <redacted-connection-string> -c "SELECT 1;"
+# Check PostgreSQL reachability from a bounded temporary pod without credentials
+kubectl run --rm debug-pg --image=postgres:15 --restart=Never --command -- pg_isready -h <postgres-host> -p 5432
 ```
 
 ---
@@ -160,6 +170,8 @@ kubectl run -it --rm debug-pg --image=postgres:15 --restart=Never -- psql <redac
 3. **Database migrations incomplete** - Init container may have failed silently
 
 ### Debugging Steps
+
+Each `kubectl` line below is a remote command payload for the runner at the top of this guide, not a host command.
 
 ```text
 # Check main container logs, then inspect the returned text for pending migrations or errors
@@ -219,12 +231,14 @@ readinessProbe:
 
 ## Diagnostic Commands Reference
 
+Every `kubectl` line below is a remote command payload for the runner at the top of this guide. Do not run this block directly on the host.
+
 ```text
 # Get all resources in superset namespace
 kubectl get all -n superset
 
-# Watch pod status
-kubectl get pods -n superset -w
+# Get a pod-status snapshot
+kubectl get pods -n superset
 
 # Check init container logs
 kubectl logs -n superset <pod> -c superset-init
@@ -243,8 +257,11 @@ kubectl exec -n superset <pod> -c superset -- <command>
 
 # Get ingress IP
 kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
 
-# Run the portable deployment checks
+After collecting remote diagnostics, run the portable deployment checks separately:
+
+```text
 node .github/scripts/verify-superset.mjs
 ```
 

@@ -81,10 +81,10 @@ You'll use `oss-to-azure-deployer` (a custom agent defined in this repo) with Gi
 
 ### Step 1: Setup
 
-Make sure you're in the repo root first:
+Run the following steps from the solution repository root. If you're in the parent directory that contains the clone, enter it first:
 
-```bash
-cd github-azure-agentic-journeys
+```text
+cd github-azure-agentic-journeys-solution
 ```
 
 Then start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/cli-getting-started); the app and VS Code agent chat work the same — type the prompts without the leading `>`:

@@ -141,10 +141,10 @@ You'll build the API in stages, not all at once. Each step teaches a different a
 
 #### Step 1: Set up the project
 
-Create a project directory inside the repo so GitHub Copilot can access the skills and agent definitions in `.github/`:
+From the solution repository root, change to the existing journey directory so GitHub Copilot can access the skills and agent definitions in `.github/`:
 
-```bash
-cd github-azure-agentic-journeys/journeys/aimarket
+```text
+cd aimarket
 ```
 
 Start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/cli-getting-started); the app and VS Code agent chat work the same — type the prompts without the leading `>`:
@@ -352,7 +352,7 @@ Pick one issue (or find a real one) and fix it with GitHub Copilot:
 
 You'll need a GitHub repo for Phase 3's cloud agent workflow. Stay in this journey folder:
 
-From the journeys repository root, change to `journeys/aimarket`, then run:
+From the solution repository root, change to `aimarket`, then run:
 
 ```text
 git init
@@ -361,9 +361,9 @@ git commit -m "AIMarket: API + React storefront"
 gh repo create aimarket --private --source=. --push
 ```
 
-> **Nested repo note:** `git init` here creates a git repo *inside* the cloned journeys repo. That's intentional — the cloud agent needs its own repo to work against. The outer repo will show `journeys/aimarket` as an untracked embedded repository; that's harmless, just don't commit it to the journeys repo. Run these commands from `journeys/aimarket`, never from the repo root.
+> **Nested repo note:** `git init` here creates a git repo *inside* the cloned solution repo. That's intentional — the cloud agent needs its own repo to work against. The outer repo will show `aimarket` as an untracked embedded repository; that's harmless, just don't commit it to the solution repo. Run these commands from `aimarket`, never from the repo root.
 >
-> Work only under `journeys/aimarket` for the rest of this journey. Do not copy the app to `~/aimarket`.
+> Work only under `aimarket` for the rest of this journey. Do not copy the app to `~/aimarket`.
 
 ---
 
@@ -521,7 +521,7 @@ The Phase 4 spec in PLAN.md and the `container-apps-deployment` skill already co
 
 **🔍 Before deploying, review these critical details:**
 
-1. Open `infra/main.bicep`. Do both container apps have `tags: { 'azd-service-name': '...' }`? Without these, `azd deploy` can't find the apps.
+1. Open `infra/main.bicep`. Do both Container Apps have `azd-service-name` tags? The `api` tag lets azd map its declared service; the `web` tag lets the postdeploy hook discover the storefront. The web app is not an azd service.
 2. Is there an Azure Container Registry resource? Without it, there's nowhere to push images.
 3. Open `api/Dockerfile`. Does it use the correct base image for your language? If using Node.js with `better-sqlite3`, it needs native build tools (`python3 make g++`).
 4. Open `client/nginx.conf`. Does it ONLY have `try_files` for SPA routing? No `/api/` proxy block. (With public ingress on Container Apps, each service has its own URL, so nginx proxying to `aimarket-api` will crash because that hostname doesn't resolve.)

@@ -15,7 +15,7 @@
 | azd | 1.28.0 (stable) |
 | Playwright | 1.49.x (bundled Chromium) |
 | Source commit | 0382099c98530ff244aafe6f729982748377c27e |
-| Workspace | journeys/grafana/ (this folder; all artifacts generated here) |
+| Workspace | grafana/ (this folder; all artifacts generated here) |
 | Stack | Single stack: Grafana OSS + Container Apps + SQLite (embedded) |
 
 ## Azure Target (owned by this run)
@@ -28,7 +28,7 @@
 | Resource group | rg-rr-grafana-0717 |
 | Tag | azd-env-name=rr-grafana-0717 |
 
-## Generated Artifacts (all inside journeys/grafana/)
+## Generated Artifacts (all inside grafana/)
 
 ```
 azure.yaml
