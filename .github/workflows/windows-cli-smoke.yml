@@ -77,7 +77,9 @@ jobs:
           try {
             Start-Sleep -Seconds 1
             node aimarket/infra/hooks/postprovision.js
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             node .github/scripts/verify-superset.mjs
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           } finally {
             Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
           }
