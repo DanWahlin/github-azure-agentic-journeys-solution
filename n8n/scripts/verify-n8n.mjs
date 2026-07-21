@@ -54,10 +54,11 @@ try {
   ]);
   record('Container App provisioning state', provisioning === 'Succeeded', provisioning);
 
-  const running = az([
+  const runningValues = az([
     'containerapp', 'revision', 'list', '--name', appName, '--resource-group', resourceGroup,
-    '--query', "[?properties.active].properties.runningState | [0]", '--output', 'tsv',
+    '--query', '[?properties.active].properties.runningState', '--output', 'tsv',
   ]);
+  const running = runningValues.split(/\r?\n/).find(Boolean) || '';
   record('Active revision running state', /running|processing/i.test(running), running || '(none)');
 } catch (err) {
   record('Container App status query', false, err.message);
@@ -65,11 +66,12 @@ try {
 
 // 2. WEBHOOK_URL configured
 try {
-  const webhook = az([
+  const webhookValues = az([
     'containerapp', 'show', '--name', appName, '--resource-group', resourceGroup,
-    '--query', "properties.template.containers[0].env[?name=='WEBHOOK_URL'].value | [0]",
+    '--query', "properties.template.containers[0].env[?name=='WEBHOOK_URL'].value",
     '--output', 'tsv',
   ]);
+  const webhook = webhookValues.split(/\r?\n/).find(Boolean) || '';
   record('WEBHOOK_URL configured', webhook === url, webhook || '(unset)');
 } catch (err) {
   record('WEBHOOK_URL query', false, err.message);

@@ -59,7 +59,7 @@ jobs:
           } else if (command.includes('kubectl logs')) {
             logs = 'Superset healthy';
           } else if (command.includes('kubectl exec')) {
-            logs = 'OK';
+            logs = '1';
           }
           console.log(JSON.stringify({ provisioningState: 'Succeeded', exitCode: 0, logs }));
           '@ | Set-Content -Encoding utf8 (Join-Path $fakeBin "fake-az.mjs")
