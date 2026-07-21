@@ -10,7 +10,7 @@ Marketplace API + React storefront with AI-powered semantic search and a shoppin
 
 Pick your API language. Data models, endpoints, and acceptance criteria are identical across stacks.
 
-**Happy path (recommended for first run):** Node.js + TypeScript + Express, region `westus`, model `gpt-5-mini` (fallback `gpt-4.1`). Stay in `journeys/aimarket` for the whole journey.
+**Happy path (recommended for first run):** Node.js + TypeScript + Express, region `westus`, model `gpt-5-mini` (fallback `gpt-4.1`). Stay in `aimarket` for the whole journey.
 
 | | Node.js | Python | .NET | Java |
 |---|---------|--------|------|------|

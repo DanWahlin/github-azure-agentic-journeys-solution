@@ -352,7 +352,7 @@ Pick one issue (or find a real one) and fix it with GitHub Copilot:
 
 You'll need a GitHub repo for Phase 3's cloud agent workflow. Stay in this journey folder:
 
-From the journeys repository root, change to `journeys/aimarket`, then run:
+From the solution repository root, change to `aimarket`, then run:
 
 ```text
 git init
@@ -361,9 +361,9 @@ git commit -m "AIMarket: API + React storefront"
 gh repo create aimarket --private --source=. --push
 ```
 
-> **Nested repo note:** `git init` here creates a git repo *inside* the cloned journeys repo. That's intentional — the cloud agent needs its own repo to work against. The outer repo will show `journeys/aimarket` as an untracked embedded repository; that's harmless, just don't commit it to the journeys repo. Run these commands from `journeys/aimarket`, never from the repo root.
+> **Nested repo note:** `git init` here creates a git repo *inside* the cloned solution repo. That's intentional — the cloud agent needs its own repo to work against. The outer repo will show `aimarket` as an untracked embedded repository; that's harmless, just don't commit it to the solution repo. Run these commands from `aimarket`, never from the repo root.
 >
-> Work only under `journeys/aimarket` for the rest of this journey. Do not copy the app to `~/aimarket`.
+> Work only under `aimarket` for the rest of this journey. Do not copy the app to `~/aimarket`.
 
 ---
 

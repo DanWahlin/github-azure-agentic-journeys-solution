@@ -51,7 +51,7 @@ The repaired Bicep compiled without journey warnings and passed a brand-new Smar
 
 ## Source-repository backports
 
-Required source guidance updates are tracked in the original `github-azure-agentic-journeys` working tree:
+Required source guidance updates are tracked at these source-repository paths in the original `github-azure-agentic-journeys` working tree:
 
 - `PREDICTABILITY-BACKPORTS.md`
 - `journeys/n8n/issues.md`
