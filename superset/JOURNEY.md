@@ -185,7 +185,7 @@ Ask the agent to confirm everything is working:
 > Verify the Superset deployment is working. Check that it's using PostgreSQL not SQLite.
 ```
 
-Generate `scripts/verify-superset.mjs` and run `node scripts/verify-superset.mjs`. It must read deployment values through `azd`, use `kubectl` argument arrays to require a `1/1 Running` pod and PostgreSQL migration logs containing `PostgresqlImpl`, require HTTP 200 from `/health`, then use bundled Playwright Chromium to log in with `#username`, `#password`, and the resilient submit selector `input[type="submit"], button[type="submit"]`, and wait for `/superset/welcome/`.
+Run the checked-in `scripts/verify-superset.mjs` with `node scripts/verify-superset.mjs`. It must read deployment values through `azd`, pass `kubectl` commands to `az aks command invoke`, require a `1/1 Running` pod and PostgreSQL migration logs containing `PostgresqlImpl`, and require HTTP 200 from `/health`. Browser login is a separate Step 4 check.
 
 If the pod is stuck, just ask. You're still in the same session:
 
