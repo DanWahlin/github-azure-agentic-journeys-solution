@@ -26,7 +26,7 @@ Want workflow automation on Azure but don't want to write Bicep (Azure's infrast
 > - Node.js 24 LTS or later for the cross-platform post-provision hook
 > - An Azure subscription with permission to create Container Apps and PostgreSQL Flexible Server
 >
-> See the [cross-platform installation guide](../../docs/tool-installation.md) for Windows, macOS, and Linux installation and verification commands.
+> See the [cross-platform installation guide](../docs/tool-installation.md) for Windows, macOS, and Linux installation and verification commands.
 
 > [!NOTE]
 > Use [GitHub Copilot CLI](https://github.com/features/copilot/cli), the [GitHub Copilot app](https://github.com/features/ai/github-app), or another agentic coding tool. For other tools, run: **"Copy or adapt this repository's `.github/skills` into your supported skills or instructions location, preserving their behavior and reporting anything unsupported."**
@@ -93,7 +93,7 @@ Then start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.gi
 copilot
 ```
 
-If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../../README.md#quick-start)):
+If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../README.md#quick-start)):
 
 ```
 > /plugin marketplace add microsoft/azure-skills
@@ -141,7 +141,7 @@ The agent handles the entire deployment:
 3. Generates modular Bicep infrastructure in `infra-n8n/`
 4. Updates `azure.yaml`, registers Azure providers, sets environment variables
 5. Runs `azd up`
-6. Configures `WEBHOOK_URL` with `infra-n8n/hooks/postprovision.js`, referenced directly from `azure.yaml`. The JavaScript hook uses Node.js and works on Windows, macOS, and Linux without Bash or PowerShell-specific syntax.
+6. Configures `WEBHOOK_URL` with `infra-n8n/hooks/postprovision.js`, referenced directly from `azure.yaml`. The cross-platform Node.js hook avoids interpolated shell commands and uses the static PowerShell JSON-payload launcher only when Windows must resolve Azure CLI shims.
 
 You can ask follow-up questions anytime during or after generation:
 
@@ -350,7 +350,7 @@ Explore the other journeys:
 - [Superset](../superset/README.md) — AKS, init containers (higher cost)
 - [Grafana](../grafana/README.md) — the simplest Container Apps deploy
 
-> 📚 **All journeys:** [Back to root README](../../README.md#agentic-journeys)
+> 📚 **All journeys:** [Back to root README](../README.md#agentic-journeys)
 
 ---
 

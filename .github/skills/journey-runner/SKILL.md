@@ -94,10 +94,9 @@ Check Azure CLI and `azd` separately:
 
 For Container Apps images, compare host architecture with the required `linux/amd64` target.
 
-- Prefer a remote ACR build on any ARM64 host.
-- If a local cross-build is required, verify Buildx and AMD64 emulation before provisioning.
-- Never install privileged QEMU/binfmt handlers automatically.
-- Require frontend Dockerfiles with native `$BUILDPLATFORM` builder stages when native tools such as esbuild are involved.
+- Require ACR cloud builds targeting `linux/amd64` on every host architecture.
+- Do not require Docker, Buildx, AMD64 emulation, or privileged QEMU/binfmt handlers for deployment.
+- Require frontend Dockerfiles that ACR can build without host-specific BuildKit variables.
 
 ### Mobile platform matrix
 
@@ -198,7 +197,7 @@ For Container Apps using ACR, verify all of these before the first private image
 - The Container App registry configuration contains the ACR login server and `identity: system`.
 - The deployed image architecture is compatible with `linux/amd64`.
 
-A filtered command such as `azd deploy web` can skip project-level hooks. Run the documented hook directly after a filtered deployment and repeat production verification.
+A filtered deployment of a service declared in `azure.yaml` can skip project-level hooks, so run the documented hook directly afterward and repeat production verification. AIMarket's web Container App is not an azd service; rebuild it with `node infra/hooks/postdeploy.js`, not `azd deploy web`.
 
 ## Step 7: Production Verification
 
