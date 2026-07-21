@@ -7,6 +7,11 @@ on:
       - ".github/scripts/run-aks-command.mjs"
       - ".github/skills/journey-runner/scripts/check-prerequisites.mjs"
       - ".github/workflows/windows-portable-cli-smoke.yml"
+      - "n8n/infra-n8n/hooks/postprovision.js"
+      - "n8n/scripts/verify-n8n.mjs"
+      - "smart-todo/infra/hooks/postprovision.js"
+      - "superset/azure.yaml"
+      - "superset/infra-superset/hooks/postprovision.js"
   workflow_dispatch:
 
 permissions:
@@ -92,6 +97,24 @@ jobs:
           if (stdin !== 'stdin value') throw new Error(stdin);
           '@ | node --input-type=module
           node .github/skills/journey-runner/scripts/check-prerequisites.mjs --required node,az,azd
+
+      - name: Exercise production CommonJS hook launchers
+        shell: pwsh
+        run: |
+          @'
+          const n8n = require('./n8n/infra-n8n/hooks/postprovision.js');
+          const smartTodo = require('./smart-todo/infra/hooks/postprovision.js');
+          const special = ['space value', 'semi;colon', 'quote"value', 'amp&pipe|percent%bang!', 'paren()'];
+          for (const [name, run] of [['n8n', n8n.runCli], ['smart-todo', smartTodo.run]]) {
+            const echoed = JSON.parse(run('azd', ['echo-args', ...special]));
+            if (JSON.stringify(echoed) !== JSON.stringify(special)) throw new Error(`${name}: ${JSON.stringify(echoed)}`);
+          }
+          '@ | node
+          node --check n8n/scripts/verify-n8n.mjs
+          node --check superset/infra-superset/hooks/postprovision.js
+          if (-not (Select-String -Quiet -Path superset/azure.yaml -Pattern 'run: ./infra-superset/hooks/postprovision.js')) {
+            throw "Superset azure.yaml does not reference the CommonJS hook"
+          }
 
       - name: Exercise fail-closed AKS diagnostic runner
         shell: pwsh

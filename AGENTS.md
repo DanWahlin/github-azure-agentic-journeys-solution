@@ -137,7 +137,7 @@ node .github/scripts/verify-aimarket.mjs
 node .github/scripts/verify-smart-todo.mjs
 ```
 
-Configure the journey E2E repository variables and secrets interactively with `node .github/scripts/setup-journey-tests.mjs`. The script asks before creating or rotating a service-principal credential. Never print or commit secret values.
+From the solution repository root, configure the journey E2E repository variables and secrets interactively with `node .github/scripts/setup-journey-tests.mjs`. The script asks before creating or rotating a service-principal credential. Never print or commit secret values.
 
 ---
 
@@ -250,45 +250,18 @@ To add a new full-stack journey (e.g., AIMarket):
 ## Project Structure
 
 ```
-journeys/
-├── grafana/                      # Grafana OSS deployment journey
-│   └── README.md
-├── n8n/                          # n8n OSS deployment journey
-│   └── README.md
-├── superset/                     # Apache Superset OSS deployment journey
-│   └── README.md
-├── aimarket/                     # Full-stack journey (API + frontend + AI)
-│   ├── README.md
-│   └── PLAN.md
-└── smart-todo/                   # Full-stack journey (iOS + Functions + AI)
-    ├── README.md
-    └── PLAN.md
-.github/
-├── agents/
-│   └── oss-to-azure-deployer.agent.md
-└── skills/
-    ├── n8n-azure/                # n8n-specific config
-    │   ├── SKILL.md
-    │   ├── config/
-    │   └── troubleshooting.md
-    ├── grafana-azure/            # Grafana-specific config
-    │   ├── SKILL.md
-    │   ├── config/
-    │   └── troubleshooting.md
-    ├── superset-azure/           # Superset-specific config
-    │   ├── SKILL.md
-    │   ├── config/
-    │   └── troubleshooting.md
-    └── data-access-abstraction/  # Repository pattern for swappable data layers
-        └── SKILL.md
-    └── container-apps-deployment/ # ACR auth, zone redundancy, SPA deploy patterns
-        └── SKILL.md
-    └── journey-template/        # Template for creating new agentic journeys
-        └── SKILL.md
-    └── journey-runner/          # Run journeys end-to-end: prompts → build → deploy → verify
-        └── SKILL.md
-    └── journey-test-harness/   # Test suite: run all journeys, deploy, screenshot, teardown
-        └── SKILL.md
-AGENTS.md                         # This file
-README.md
+<repository-root>/
+├── grafana/                       # Grafana runnable solution
+├── n8n/                           # n8n runnable solution
+├── superset/                      # Apache Superset runnable solution
+├── aimarket/                      # Full-stack runnable solution
+├── smart-todo/                    # Full-stack runnable solution
+├── docs/
+├── .github/
+│   ├── agents/
+│   ├── scripts/
+│   ├── skills/
+│   └── workflows/
+├── AGENTS.md
+└── README.md
 ```

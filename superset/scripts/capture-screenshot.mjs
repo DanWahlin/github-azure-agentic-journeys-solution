@@ -5,7 +5,7 @@
 //     --username-selector #username --password-selector #password \
 //     --submit-selector "button:has-text('Sign in')" --success-path /superset/welcome/
 import { createRequire } from 'node:module';
-import { spawnSync } from 'node:child_process';
+import { run } from '../../.github/scripts/_utils.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -28,7 +28,7 @@ const username = arg('username', 'admin');
 let password = arg('password');
 // Fall back to azd env so the secret never transits a shell command line.
 if (!password) {
-  const r = spawnSync('azd', ['env', 'get-value', 'SUPERSET_ADMIN_PASSWORD'], { encoding: 'utf8' });
+  const r = run('azd', ['env', 'get-value', 'SUPERSET_ADMIN_PASSWORD'], { allowFailure: true });
   if (r.status === 0) password = (r.stdout || '').trim();
 }
 const usernameSelector = arg('username-selector', '#username');

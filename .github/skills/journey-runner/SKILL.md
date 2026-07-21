@@ -27,7 +27,7 @@ Do not install system tools during a run. Report the missing tool, its install l
 
 Inputs:
 
-1. Journey path, such as `journeys/smart-todo/`
+1. Journey path, such as `smart-todo/`
 2. Stack choice when the journey supports multiple stacks
 3. Azure subscription for deployment runs
 4. Cleanup policy: `after-verification` or `leave-running`

@@ -5,22 +5,19 @@
 // requires the UI to return HTTP 200, and uses Playwright's bundled Chromium to
 // assert the rendered page is the owner-setup or login screen. Exits nonzero on
 // any failure. No shell string interpolation is used.
-import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
-
-const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
-const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
+import { run } from '../../.github/scripts/_utils.mjs';
 
 function azd(key) {
   try {
-    return execFileSync(azdExe, ['env', 'get-value', key], { encoding: 'utf8' }).trim();
+    return run('azd', ['env', 'get-value', key]).stdout.trim();
   } catch {
     return '';
   }
 }
 
 function az(args) {
-  return execFileSync(azExe, args, { encoding: 'utf8' }).trim();
+  return run('az', args).stdout.trim();
 }
 
 async function httpStatus(url) {

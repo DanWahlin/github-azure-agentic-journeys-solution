@@ -14,26 +14,44 @@
  * connection-policy change are always reverted in the finally block.
  */
 
-const { execFileSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process');
 const https = require('node:https');
 const path = require('node:path');
 
-const isWin = process.platform === 'win32';
-
-// Resolve platform-specific executable names. az/azd ship as .cmd on Windows.
-function exe(name) {
-  if (!isWin) return name;
-  if (name === 'az' || name === 'azd') return `${name}.cmd`;
-  return `${name}.exe`;
-}
+const WINDOWS_CLI_RUNNER = [
+  "$ErrorActionPreference = 'Stop'",
+  '$payload = ConvertFrom-Json -InputObject $env:AZURE_NATIVE_CLI_PAYLOAD',
+  '$command = [string]$payload[0]',
+  '$arguments = @($payload | Select-Object -Skip 1)',
+  '& $command @arguments',
+  '$ok = $?',
+  '$code = $LASTEXITCODE',
+  'if ($null -ne $code) { exit $code }',
+  'if (-not $ok) { exit 1 }',
+].join('; ');
 
 function run(command, args, options = {}) {
-  return execFileSync(command, args, {
+  const invocation = process.platform === 'win32'
+    ? {
+        file: 'powershell.exe',
+        args: ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', WINDOWS_CLI_RUNNER],
+        env: { ...process.env, AZURE_NATIVE_CLI_PAYLOAD: JSON.stringify([command, ...args]) },
+      }
+    : { file: command, args, env: process.env };
+  const result = spawnSync(invocation.file, invocation.args, {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     maxBuffer: 16 * 1024 * 1024,
+    windowsHide: true,
     ...options,
-  }).toString();
+    env: invocation.env,
+    shell: false,
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`${command} failed (${result.status}): ${(result.stderr || result.stdout || '').trim()}`);
+  }
+  return (result.stdout || '').toString();
 }
 
 // Run a command purely to check availability; return true/false.
@@ -47,7 +65,7 @@ function available(command, args) {
 }
 
 function azdEnvValue(key) {
-  const value = run(exe('azd'), ['env', 'get-value', key]).trim();
+  const value = run('azd', ['env', 'get-value', key]).trim();
   if (!value || value === 'ERROR' || /not found/i.test(value)) {
     throw new Error(`azd environment value "${key}" is not set.`);
   }
@@ -94,14 +112,14 @@ function getPublicIp() {
 }
 
 async function main() {
-  const AZ = exe('az');
+  const AZ = 'az';
   const NODE = process.execPath;
-  const SQLCMD = exe('sqlcmd');
+  const SQLCMD = 'sqlcmd';
 
   // 1. Fail before making any Azure changes if a required tool is unavailable.
   const preflight = [
     ['az', AZ, ['version', '-o', 'json']],
-    ['azd', exe('azd'), ['version']],
+    ['azd', 'azd', ['version']],
     ['node', NODE, ['--version']],
     ['sqlcmd', SQLCMD, ['--version']],
   ];
@@ -234,7 +252,11 @@ async function main() {
   console.log('Post-provision SQL setup complete.');
 }
 
-main().catch((err) => {
-  console.error(`Post-provision failed: ${err.message}`);
-  process.exit(1);
-});
+module.exports = { run };
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(`Post-provision failed: ${err.message}`);
+    process.exit(1);
+  });
+}
