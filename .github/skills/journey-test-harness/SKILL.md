@@ -22,7 +22,7 @@ Each deployed journey uses `cleanup: after-verification` unless the user explici
 
 ## Step 1: Discover Journeys
 
-Use repository file-search APIs or Node.js `fs.readdir()` to find `journeys/*/README.md`. Do not use `ls | sed`, shell globs, or platform-specific path parsing.
+Use repository file-search APIs or Node.js `fs.readdir()` to discover root journey directories containing `JOURNEY.md`. Do not use `ls | sed`, shell globs, or platform-specific path parsing.
 
 For each journey, record:
 

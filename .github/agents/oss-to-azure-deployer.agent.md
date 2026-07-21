@@ -165,7 +165,7 @@ When the learner gives a short request, expand it to include: location, generate
 ## Project Structure
 
 ```
-github-azure-agentic-journeys/
+github-azure-agentic-journeys-solution/
 ├── .github/
 │   ├── agents/
 │   │   └── oss-to-azure-deployer.agent.md  (this file)
@@ -174,10 +174,9 @@ github-azure-agentic-journeys/
 │       ├── grafana-azure/
 │       ├── superset-azure/
 │       └── container-apps-deployment/
-├── journeys/
-│   ├── n8n/README.md
-│   ├── grafana/README.md
-│   └── superset/README.md
+├── n8n/JOURNEY.md
+├── grafana/JOURNEY.md
+├── superset/JOURNEY.md
 └── README.md
 ```
 

@@ -8,6 +8,6 @@ infra:
   module: main
 hooks:
   postprovision:
-    run: node ./infra-superset/hooks/postprovision.mjs
+    run: ./infra-superset/hooks/postprovision.js
     continueOnError: false
     interactive: false

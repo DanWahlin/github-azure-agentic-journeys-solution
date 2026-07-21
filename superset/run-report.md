@@ -36,7 +36,7 @@ infra-superset/
   main.bicep                            # subscription scope; creates RG rg-<env>
   resources.bicep                       # RG scope: Log Analytics, PostgreSQL, AKS (raw Microsoft.*)
   main.parameters.json
-  hooks/postprovision.mjs               # AKS run command: Helm NGINX, manifests, LB poll, rollout
+  hooks/postprovision.js                # AKS run command: Helm NGINX, manifests, LB poll, rollout
   manifests/00-namespace.yaml
   manifests/10-configmap.yaml           # superset_config.py bridge (env -> SQLALCHEMY_DATABASE_URI)
   manifests/20-deployment.yaml          # init+main, shared emptyDir psycopg2, probes
@@ -66,7 +66,7 @@ run-report.md, issues.md
 PASS  Pod superset-7db6ccc857-wj69w Ready 1/1 (Running)
 PASS  Init logs contain PostgresqlImpl
 PASS  Init logs have no SQLiteImpl fallback
-PASS  Main logs have no SQLiteImpl fallback
+PASS  Main logs retrieved with no SQLiteImpl fallback
 PASS  psycopg2 importable in main container
 PASS  GET /health returns HTTP 200 — status=200 body=OK
 ```
@@ -81,7 +81,7 @@ PASS  GET /health returns HTTP 200 — status=200 body=OK
 - ✅ AKS system pool created with **no availability zones** (property omitted) — safe for westus.
 - ✅ Shared `emptyDir` psycopg2 pattern: init installs `psycopg2-binary --target=/psycopg2-lib`; both containers set `PYTHONPATH=/psycopg2-lib` and mount the shared volume.
 - ✅ Secure credentials generated with Node `crypto` (POSTGRES_PASSWORD, SUPERSET_SECRET_KEY, SUPERSET_ADMIN_PASSWORD), pinned in azd env, never printed or committed. K8s secret created at deploy time by the hook — no plaintext secret files.
-- ✅ Portable hook: `postprovision.mjs` invokes `az`/`azd` with argument arrays and runs Helm/`kubectl` inside Azure through AKS run command. Windows uses the static PowerShell JSON-payload launcher; macOS/Linux invoke CLIs directly.
+- ✅ Portable hook: `postprovision.js` invokes `az`/`azd` with argument arrays and runs Helm/`kubectl` inside Azure through AKS run command. Windows uses the static PowerShell JSON-payload launcher; macOS/Linux invoke CLIs directly.
 - ✅ Validation before `azd up` (Bicep build, manifest parse, hook syntax).
 - ✅ All artifacts generated inside `superset/`; no resources touched outside `rr-superset-0717` / `rg-rr-superset-0717`.
 

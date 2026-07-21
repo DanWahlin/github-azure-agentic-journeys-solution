@@ -3,14 +3,14 @@
 // Reads GRAFANA_URL / admin credentials via azd; never prints the password.
 // Asserts: /api/health -> 200 + database:"ok"; root reachable (200 after redirect);
 // authenticated /api/org -> 200 with an organization payload.
-import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { run } from '../../.github/scripts/_utils.mjs';
+
+const grafanaRoot = fileURLToPath(new URL('..', import.meta.url));
 
 function azdEnv(key) {
   try {
-    return execFileSync('azd', ['env', 'get-value', key], {
-      encoding: 'utf8',
-      cwd: new URL('..', import.meta.url).pathname,
-    }).trim();
+    return run('azd', ['env', 'get-value', key], { cwd: grafanaRoot }).stdout.trim();
   } catch {
     return '';
   }

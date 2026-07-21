@@ -28,7 +28,7 @@ The original single-success readiness check could return while Azure was still d
 
 ### Superset
 
-- `postprovision.mjs` now generates and persists missing `SUPERSET_SECRET_KEY` and `SUPERSET_ADMIN_PASSWORD` values securely.
+- `postprovision.js` now generates and persists missing `SUPERSET_SECRET_KEY` and `SUPERSET_ADMIN_PASSWORD` values securely.
 - Existing values are reused on reruns, and values are never printed.
 
 The repaired hook completed Helm installation, Kubernetes secret creation, rollout, ingress discovery, PostgreSQL verification, and authenticated browser login from a brand-new Superset environment with neither secret preconfigured.

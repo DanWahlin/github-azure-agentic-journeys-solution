@@ -1,20 +1,20 @@
+'use strict';
+
 // Cross-platform azd post-provision hook for Superset on AKS.
 // Runs Helm and kubectl inside Azure through `az aks command invoke`.
 // The host needs only az, azd, and Node.js. Secret values are never printed.
-import { spawnSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
-import {
+const { spawnSync } = require('node:child_process');
+const { randomBytes } = require('node:crypto');
+const {
   chmodSync,
   copyFileSync,
   mkdtempSync,
   rmSync,
   writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+} = require('node:fs');
+const { tmpdir } = require('node:os');
+const { join } = require('node:path');
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const manifestsDir = join(__dirname, '..', 'manifests');
 const WINDOWS_CLI_RUNNER = [
   "$ErrorActionPreference = 'Stop'",

@@ -1,18 +1,46 @@
 #!/usr/bin/env node
 // Cross-platform azd postprovision hook: sets WEBHOOK_URL on the n8n Container App.
-// CommonJS .js so azd (which does not accept .mjs) runs it with `node` on any OS.
-// Uses execFileSync with argument arrays only — no shell string interpolation,
-// no chmod, no command substitution. Works on Windows, macOS, and Linux.
-const { execFileSync } = require('node:child_process');
+// CommonJS .js so azd runs it with Node on any OS. macOS/Linux invoke CLIs
+// directly; Windows uses a static PowerShell program with JSON argument data.
+const { spawnSync } = require('node:child_process');
 
-const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
-const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
+const WINDOWS_CLI_RUNNER = [
+  "$ErrorActionPreference = 'Stop'",
+  '$payload = ConvertFrom-Json -InputObject $env:AZURE_NATIVE_CLI_PAYLOAD',
+  '$command = [string]$payload[0]',
+  '$arguments = @($payload | Select-Object -Skip 1)',
+  '& $command @arguments',
+  '$ok = $?',
+  '$code = $LASTEXITCODE',
+  'if ($null -ne $code) { exit $code }',
+  'if (-not $ok) { exit 1 }',
+].join('; ');
+
+function runCli(command, args, { stdio = ['ignore', 'pipe', 'pipe'] } = {}) {
+  const invocation = process.platform === 'win32'
+    ? {
+        file: 'powershell.exe',
+        args: ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', WINDOWS_CLI_RUNNER],
+        env: { ...process.env, AZURE_NATIVE_CLI_PAYLOAD: JSON.stringify([command, ...args]) },
+      }
+    : { file: command, args, env: process.env };
+  const result = spawnSync(invocation.file, invocation.args, {
+    encoding: 'utf8',
+    env: invocation.env,
+    shell: false,
+    stdio,
+    windowsHide: true,
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`${command} failed (${result.status}): ${(result.stderr || result.stdout || '').trim()}`);
+  }
+  return result.stdout || '';
+}
 
 function readAzdValue(key) {
   try {
-    return execFileSync(azdExe, ['env', 'get-value', key], {
-      encoding: 'utf8',
-    }).trim();
+    return runCli('azd', ['env', 'get-value', key]).trim();
   } catch {
     return '';
   }
@@ -68,8 +96,8 @@ if (!appName || !resourceGroup) {
 // Resolve the FQDN directly from the live Container App if the URL output is absent.
 if (!n8nUrl) {
   try {
-    const fqdn = execFileSync(
-      azExe,
+    const fqdn = runCli(
+      'az',
       [
         'containerapp',
         'show',
@@ -81,8 +109,7 @@ if (!n8nUrl) {
         'properties.configuration.ingress.fqdn',
         '--output',
         'tsv',
-      ],
-      { encoding: 'utf8' }
+      ]
     ).trim();
     if (!fqdn) {
       fail('Could not resolve Container App FQDN.');
@@ -96,8 +123,8 @@ if (!n8nUrl) {
 console.log(`[postprovision] Setting WEBHOOK_URL=${n8nUrl} on ${appName}`);
 
 try {
-  execFileSync(
-    azExe,
+  runCli(
+    'az',
     [
       'containerapp',
       'update',
@@ -118,7 +145,7 @@ try {
 
 // Persist for downstream tooling / reporting.
 try {
-  execFileSync(azdExe, ['env', 'set', 'WEBHOOK_URL', n8nUrl], { stdio: 'ignore' });
+  runCli('azd', ['env', 'set', 'WEBHOOK_URL', n8nUrl], { stdio: 'ignore' });
 } catch {
   // Non-fatal: the container env var is the source of truth.
 }
@@ -128,7 +155,11 @@ await waitForRevisionReady(n8nUrl);
 console.log('[postprovision] WEBHOOK_URL configured and replacement revision is ready.');
 }
 
-main().catch((err) => {
-  console.error(`[postprovision] ${err && err.message ? err.message : err}`);
-  process.exit(1);
-});
+module.exports = { runCli };
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(`[postprovision] ${err && err.message ? err.message : err}`);
+    process.exit(1);
+  });
+}
