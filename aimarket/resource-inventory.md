@@ -41,7 +41,7 @@ Role assignments live inside the resource group scopes (ACR / AI Services) and a
 | Repository:tag | Built by | Platform |
 |----------------|----------|----------|
 | `aimarket-api:azd-*` | azd remoteBuild (ACR) | linux/amd64 |
-| `aimarket-web:postdeploy-*` | postdeploy hook (`docker buildx --push`) | linux/amd64 |
+| `aimarket-web:postdeploy-*` | postdeploy hook (`az acr build`) | linux/amd64 |
 
 ## Soft-delete note
 

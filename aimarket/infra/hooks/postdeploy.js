@@ -21,6 +21,8 @@
 
 const { execFileSync } = require('node:child_process');
 const path = require('node:path');
+const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
+const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
 
 const APP_ROOT = path.resolve(__dirname, '..', '..');
 const CLIENT_DIR = path.join(APP_ROOT, 'client');
@@ -41,7 +43,7 @@ function envValue(name) {
     return process.env[name].trim();
   }
   try {
-    return run('azd', ['env', 'get-value', name], { capture: true }).trim();
+    return run(azdExe, ['env', 'get-value', name], { capture: true }).trim();
   } catch {
     return '';
   }
@@ -111,7 +113,7 @@ async function main() {
   console.log(`[postdeploy] Rebuilding storefront with VITE_API_URL=${viteApiUrl}`);
   console.log(`[postdeploy] ACR cloud build (linux/amd64) -> ${imageRef}`);
 
-  run('az', [
+  run(azExe, [
     'acr', 'build',
     '--registry', acrName,
     '--image', `aimarket-web:${tag}`,
@@ -122,7 +124,7 @@ async function main() {
   ], { cwd: CLIENT_DIR });
 
   console.log(`[postdeploy] Updating web Container App '${webAppName}' to ${imageRef}`);
-  run('az', [
+  run(azExe, [
     'containerapp', 'update',
     '--name', webAppName,
     '--resource-group', resourceGroup,

@@ -21,6 +21,8 @@
 'use strict';
 
 const { execFileSync } = require('node:child_process');
+const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
+const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
 
 function run(cmd, args, capture) {
   return execFileSync(cmd, args, {
@@ -36,7 +38,7 @@ function envValue(name) {
     return process.env[name].trim();
   }
   try {
-    return run('azd', ['env', 'get-value', name], true).trim();
+    return run(azdExe, ['env', 'get-value', name], true).trim();
   } catch {
     return '';
   }
@@ -59,7 +61,7 @@ async function setRegistry(appName, resourceGroup, loginServer) {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       console.log(`[postprovision] (${appName}) registry set --identity system (attempt ${attempt})`);
-      run('az', [
+      run(azExe, [
         'containerapp', 'registry', 'set',
         '--name', appName,
         '--resource-group', resourceGroup,

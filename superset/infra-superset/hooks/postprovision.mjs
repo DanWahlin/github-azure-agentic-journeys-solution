@@ -158,11 +158,12 @@ async function invokeRemoteDeployment(resourceGroup, clusterName, stagingDir) {
       continue;
     }
     const result = parseResult(resultResponse.stdout, 'AKS command result');
-    if (result.provisioningState === 'Succeeded' && Number(result.exitCode) === 0) {
-      return result;
+    if (result.provisioningState === 'Succeeded') {
+      if (result.exitCode === 0) return result;
+      throw new Error(`Remote AKS deployment returned no successful exit code (${result.exitCode ?? 'missing'}):\n${result.logs || result.reason || ''}`);
     }
     if (result.provisioningState === 'Failed' ||
-        (result.exitCode !== null && result.exitCode !== undefined && Number(result.exitCode) !== 0)) {
+        (result.exitCode !== null && result.exitCode !== undefined && result.exitCode !== 0)) {
       throw new Error(`Remote AKS deployment failed (${result.exitCode ?? 'unknown'}):\n${result.logs || result.reason || ''}`);
     }
     await sleep(10000);
@@ -180,7 +181,7 @@ function invokeShortCommand(resourceGroup, clusterName, command) {
     '--only-show-errors',
   ], { capture: true });
   const result = parseResult(res.stdout, 'AKS command');
-  if (result.provisioningState !== 'Succeeded' || Number(result.exitCode) !== 0) {
+  if (result.provisioningState !== 'Succeeded' || result.exitCode !== 0) {
     throw new Error(`Remote AKS command failed (${result.exitCode ?? 'unknown'}):\n${result.logs || result.reason || ''}`);
   }
   return (result.logs || '').trim();

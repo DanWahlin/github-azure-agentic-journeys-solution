@@ -496,12 +496,6 @@ gh pr merge <PR_NUMBER>
   <img src="./images/azure-deployment.webp" alt="Phase 4: Deploy to Azure" width="800" />
 </p>
 
-Before starting, verify Docker is installed and running. You'll need it to build container images:
-
-```bash
-docker --version  # Need Docker Desktop or Docker Engine
-```
-
 Before generating Bicep, confirm the model exists in your region:
 
 ```bash
@@ -519,8 +513,9 @@ The Phase 4 spec in PLAN.md and the `container-apps-deployment` skill already co
   Containerization, Azure Resources, Bicep Requirements, and Deployment
   sections exactly, create everything needed to deploy AIMarket to Azure
   Container Apps: Bicep in infra/, Dockerfiles with .dockerignore files for
-  api/ and client/, azure.yaml (language: ts), and the required postdeploy
-  hook wired into azure.yaml. Default stack: Node.js API + React client.
+  api/ and client/, azure.yaml with API remoteBuild: true, and the required
+  postdeploy ACR build hook wired into azure.yaml. Default stack: Node.js API
+  + React client. Do not require local Docker or Buildx.
   Set the location to westus. Log issues to issues.md.
 ```
 
@@ -534,7 +529,8 @@ The Phase 4 spec in PLAN.md and the `container-apps-deployment` skill already co
 6. Open `api/.dockerignore`. Make sure it does NOT exclude build config files like `tsconfig.json`. The Docker build needs them to compile.
 7. Open `client/Dockerfile`. Is it compatible with an ACR `linux/amd64` cloud build, and are `ARG VITE_API_URL` and `ENV VITE_API_URL=$VITE_API_URL` **before** `npm run build`?
 8. Do both Container Apps use system-assigned identity, an `AcrPull` assignment, and an explicit ACR registry entry using `identity: system` before a private image is deployed?
-9. Does `azure.yaml` define `hooks.postdeploy` → `infra/hooks/postdeploy.js` without `shell: sh`? Without this, the storefront will load HTML but products will fail.
+9. Does the API service in `azure.yaml` set `docker.remoteBuild: true` and `platform: linux/amd64`? Without this, `azd up` can require local Docker.
+10. Does `azure.yaml` define `hooks.postdeploy` → `infra/hooks/postdeploy.js` without `shell: sh`? Without this, the storefront will load HTML but products will fail.
 
 **💡 What you're learning:** Deployment infrastructure has sharp edges that break silently. Missing service tags = deployment succeeds but app doesn't update. Missing `.dockerignore` = disk space errors. Wrong nginx config = container crashes on startup. The postdeploy hook exists because Vite bakes `VITE_API_URL` at **build** time—the API FQDN is only known **after** provision.
 
@@ -560,8 +556,8 @@ The **postdeploy hook** should have rebuilt the web image with `VITE_API_URL=<AP
 
 ```
 > The frontend can't reach the API. Run or fix infra/hooks/postdeploy.js.
-  It must read API_URL with azd, rebuild the client with API_URL + "/api",
-  target linux/amd64, push to ACR, and update the web Container App without
+  It must read API_URL with azd, run az acr build with API_URL + "/api",
+  target linux/amd64, and update the web Container App without
   relying on Bash or PowerShell-specific syntax.
 ```
 
@@ -574,7 +570,7 @@ For a storefront-only rebuild, run the JavaScript hook directly:
 node infra/hooks/postdeploy.js
 ```
 
-The hook must read all dynamic values through `azd env get-value`, call Docker and Azure CLI with argument arrays, and verify that the updated Container App reaches `Running` before exiting.
+The hook must read all dynamic values through `azd env get-value`, call Azure CLI with argument arrays, build the image with `az acr build`, and verify that the updated Container App reaches `Running` before exiting. The host must not need Docker or Buildx.
 
 </details>
 
@@ -691,9 +687,9 @@ java --version    # Java (need 17+)
 
 **Check:** Open browser dev tools → Network tab. Are requests going to `https://ca-api-.../products` (missing `/api`)? They should go to `https://ca-api-.../api/products`.
 
-**Fix:** Rebuild the frontend image with `VITE_API_URL` including `/api`:
-```bash
-docker build --build-arg VITE_API_URL="https://<api-fqdn>/api" ...
+**Fix:** Rebuild the frontend image in Azure Container Registry with the checked-in hook, which passes `VITE_API_URL` including `/api`:
+```text
+node infra/hooks/postdeploy.js
 ```
 
 ### Deployment fails with provider errors
