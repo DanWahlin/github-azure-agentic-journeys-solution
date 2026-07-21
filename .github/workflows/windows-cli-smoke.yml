@@ -1,0 +1,83 @@
+name: Windows CLI launcher smoke test
+
+on:
+  pull_request:
+    paths:
+      - "aimarket/infra/hooks/**"
+      - "superset/infra-superset/hooks/**"
+      - "superset/scripts/verify-superset.mjs"
+      - ".github/scripts/verify-superset.mjs"
+      - ".github/workflows/windows-cli-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-cli-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Exercise .cmd launchers through the production Node hooks
+        shell: pwsh
+        run: |
+          $fakeBin = Join-Path $env:RUNNER_TEMP "azure-cli-fakes"
+          New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
+
+          @'
+          @echo off
+          if "%1"=="env" if "%2"=="get-values" (
+            echo {"AZURE_RESOURCE_GROUP":"rg-test","AZURE_AKS_CLUSTER_NAME":"aks-test","SUPERSET_URL":"http://127.0.0.1:18080"}
+            exit /b 0
+          )
+          if "%1"=="env" if "%2"=="get-value" (
+            if "%3"=="RESOURCE_GROUP_NAME" echo rg-test
+            if "%3"=="AZURE_CONTAINER_REGISTRY_ENDPOINT" echo test.azurecr.io
+            if "%3"=="API_CONTAINER_APP_NAME" echo api-test
+            if "%3"=="WEB_CONTAINER_APP_NAME" echo web-test
+            exit /b 0
+          )
+          exit /b 1
+          '@ | Set-Content -Encoding ascii (Join-Path $fakeBin "azd.cmd")
+
+          @'
+          @echo off
+          node "%~dp0fake-az.mjs" %*
+          '@ | Set-Content -Encoding ascii (Join-Path $fakeBin "az.cmd")
+
+          @'
+          const args = process.argv.slice(2);
+          const index = args.indexOf('--command');
+          const command = index >= 0 ? args[index + 1] : '';
+          let logs = '{}';
+          if (command.includes('get pods')) {
+            logs = JSON.stringify({ items: [{ metadata: { name: 'superset-test' }, status: { phase: 'Running', containerStatuses: [{ ready: true }] } }] });
+          } else if (command.includes('superset-init')) {
+            logs = 'Using PostgresqlImpl';
+          } else if (command.includes('kubectl logs')) {
+            logs = 'Superset healthy';
+          } else if (command.includes('kubectl exec')) {
+            logs = 'OK';
+          }
+          console.log(JSON.stringify({ provisioningState: 'Succeeded', exitCode: 0, logs }));
+          '@ | Set-Content -Encoding utf8 (Join-Path $fakeBin "fake-az.mjs")
+
+          @'
+          import { createServer } from 'node:http';
+          createServer((request, response) => {
+            response.writeHead(request.url === '/health' ? 200 : 404, { 'content-type': 'text/plain' });
+            response.end(request.url === '/health' ? 'OK' : 'not found');
+          }).listen(18080, '127.0.0.1');
+          '@ | Set-Content -Encoding utf8 (Join-Path $fakeBin "health-server.mjs")
+
+          $env:PATH = "$fakeBin;$env:PATH"
+          $server = Start-Process node -ArgumentList (Join-Path $fakeBin "health-server.mjs") -PassThru
+          try {
+            Start-Sleep -Seconds 1
+            node aimarket/infra/hooks/postprovision.js
+            node .github/scripts/verify-superset.mjs
+          } finally {
+            Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+          }

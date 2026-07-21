@@ -16,25 +16,44 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const manifestsDir = join(__dirname, '..', 'manifests');
-const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
-const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
+const WINDOWS_CLI_RUNNER = [
+  "$ErrorActionPreference = 'Stop'",
+  '$payload = ConvertFrom-Json -InputObject $env:AZURE_NATIVE_CLI_PAYLOAD',
+  '$command = [string]$payload[0]',
+  '$arguments = @($payload | Select-Object -Skip 1)',
+  '& $command @arguments',
+  '$ok = $?',
+  '$code = $LASTEXITCODE',
+  'if ($null -ne $code) { exit $code }',
+  'if (-not $ok) { exit 1 }',
+].join('; ');
 
 function run(cmd, args, opts = {}) {
-  const res = spawnSync(cmd, args, {
-    stdio: opts.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+  const invocation = process.platform === 'win32'
+    ? {
+        file: 'powershell.exe',
+        args: ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', WINDOWS_CLI_RUNNER],
+        env: { ...process.env, AZURE_NATIVE_CLI_PAYLOAD: JSON.stringify([cmd, ...args]) },
+      }
+    : { file: cmd, args, env: process.env };
+  const res = spawnSync(invocation.file, invocation.args, {
+    stdio: opts.stdio || (opts.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit'),
     encoding: 'utf8',
     cwd: opts.cwd,
+    env: invocation.env,
+    windowsHide: true,
   });
   if (res.error) throw res.error;
   if (res.status !== 0) {
     const detail = opts.capture ? `\n${res.stdout || ''}${res.stderr || ''}` : '';
-    throw new Error(`Command failed (${res.status}): ${cmd} ${args.join(' ')}${detail}`);
+    const command = opts.redact ? `${cmd} [arguments redacted]` : `${cmd} ${args.join(' ')}`;
+    throw new Error(`Command failed (${res.status}): ${command}${detail}`);
   }
   return res;
 }
 
 function getAzdEnv() {
-  const res = run(azdExe, ['env', 'get-values', '--output', 'json'], { capture: true });
+  const res = run('azd', ['env', 'get-values', '--output', 'json'], { capture: true });
   return JSON.parse(res.stdout);
 }
 
@@ -42,11 +61,9 @@ function ensureAzdSecret(env, name, createValue) {
   if (env[name]) return env[name];
 
   const value = createValue();
-  const res = spawnSync(azdExe, ['env', 'set', name, value], {
-    stdio: 'ignore',
-    encoding: 'utf8',
-  });
-  if (res.error || res.status !== 0) {
+  try {
+    run('azd', ['env', 'set', name, value], { stdio: 'ignore', redact: true });
+  } catch {
     throw new Error(`Failed to persist generated azd secret: ${name}`);
   }
   env[name] = value;
@@ -125,7 +142,7 @@ function parseResult(output, context) {
 }
 
 async function invokeRemoteDeployment(resourceGroup, clusterName, stagingDir) {
-  const res = run(azExe, [
+  const res = run('az', [
     'aks', 'command', 'invoke',
     '--resource-group', resourceGroup,
     '--name', clusterName,
@@ -144,7 +161,7 @@ async function invokeRemoteDeployment(resourceGroup, clusterName, stagingDir) {
   const commandId = idMatch[1];
   const deadline = Date.now() + 30 * 60 * 1000;
   while (Date.now() < deadline) {
-    const resultResponse = run(azExe, [
+    const resultResponse = run('az', [
       'aks', 'command', 'result',
       '--resource-group', resourceGroup,
       '--name', clusterName,
@@ -172,7 +189,7 @@ async function invokeRemoteDeployment(resourceGroup, clusterName, stagingDir) {
 }
 
 function invokeShortCommand(resourceGroup, clusterName, command) {
-  const res = run(azExe, [
+  const res = run('az', [
     'aks', 'command', 'invoke',
     '--resource-group', resourceGroup,
     '--name', clusterName,
@@ -236,7 +253,7 @@ async function main() {
     await invokeRemoteDeployment(resourceGroup, clusterName, stagingDir);
     const ip = await waitForIngressIp(resourceGroup, clusterName);
     const url = `http://${ip}`;
-    run(azdExe, ['env', 'set', 'SUPERSET_URL', url]);
+    run('azd', ['env', 'set', 'SUPERSET_URL', url]);
     console.log('Superset post-provision complete.');
     console.log(`DEPLOYED_URL=${url}`);
   } finally {

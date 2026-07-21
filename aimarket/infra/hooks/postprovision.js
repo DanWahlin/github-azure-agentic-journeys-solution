@@ -21,14 +21,35 @@
 'use strict';
 
 const { execFileSync } = require('node:child_process');
-const azExe = process.platform === 'win32' ? 'az.cmd' : 'az';
-const azdExe = process.platform === 'win32' ? 'azd.cmd' : 'azd';
+
+const WINDOWS_CLI_RUNNER = [
+  "$ErrorActionPreference = 'Stop'",
+  '$payload = ConvertFrom-Json -InputObject $env:AZURE_NATIVE_CLI_PAYLOAD',
+  '$command = [string]$payload[0]',
+  '$arguments = @($payload | Select-Object -Skip 1)',
+  '& $command @arguments',
+  '$ok = $?',
+  '$code = $LASTEXITCODE',
+  'if ($null -ne $code) { exit $code }',
+  'if (-not $ok) { exit 1 }',
+].join('; ');
+
+function cliInvocation(cmd, args) {
+  if (process.platform !== 'win32') return { file: cmd, args, env: process.env };
+  return {
+    file: 'powershell.exe',
+    args: ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', WINDOWS_CLI_RUNNER],
+    env: { ...process.env, AZURE_NATIVE_CLI_PAYLOAD: JSON.stringify([cmd, ...args]) },
+  };
+}
 
 function run(cmd, args, capture) {
-  return execFileSync(cmd, args, {
+  const invocation = cliInvocation(cmd, args);
+  return execFileSync(invocation.file, invocation.args, {
     stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
     encoding: 'utf8',
-    env: process.env,
+    env: invocation.env,
+    windowsHide: true,
     maxBuffer: 32 * 1024 * 1024,
   });
 }
@@ -38,7 +59,7 @@ function envValue(name) {
     return process.env[name].trim();
   }
   try {
-    return run(azdExe, ['env', 'get-value', name], true).trim();
+    return run('azd', ['env', 'get-value', name], true).trim();
   } catch {
     return '';
   }
@@ -61,7 +82,7 @@ async function setRegistry(appName, resourceGroup, loginServer) {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       console.log(`[postprovision] (${appName}) registry set --identity system (attempt ${attempt})`);
-      run(azExe, [
+      run('az', [
         'containerapp', 'registry', 'set',
         '--name', appName,
         '--resource-group', resourceGroup,
