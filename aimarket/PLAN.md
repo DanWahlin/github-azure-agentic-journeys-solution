@@ -17,7 +17,7 @@ Pick your API language. Data models, endpoints, and acceptance criteria are iden
 | **Framework** | Express + TypeScript | FastAPI | ASP.NET Core Minimal APIs | Spring Boot |
 | **SQLite** | `better-sqlite3` | `sqlite3` (stdlib) | `Microsoft.Data.Sqlite` | `JdbcTemplate` + SQLite |
 
-Frontend is always React 18 + Tailwind CSS. AI via **gpt-5-mini on Microsoft Foundry** (fallback to gpt-4.1 if unavailable in your region). Deploy with **azd** + **Bicep**, preferring Azure Verified Modules (AVM) with raw `Microsoft.*` fallback when AVM blocks deployment. See [`data-access-abstraction` skill](../../.github/skills/data-access-abstraction/SKILL.md) for repository pattern examples in all four languages.
+Frontend is always React 18 + Tailwind CSS. AI via **gpt-5-mini on Microsoft Foundry** (fallback to gpt-4.1 if unavailable in your region). Deploy with **azd** + **Bicep**, preferring Azure Verified Modules (AVM) with raw `Microsoft.*` fallback when AVM blocks deployment. See [`data-access-abstraction` skill](../.github/skills/data-access-abstraction/SKILL.md) for repository pattern examples in all four languages.
 
 ## Project Structure
 
@@ -581,7 +581,7 @@ When not set: search falls back to SQLite LIKE queries; `/api/chat` returns 503.
 
 Deploy the full stack to Azure Container Apps using Bicep with AVM modules and azd.
 
-> **📖 Read the [`container-apps-deployment` skill](../../.github/skills/container-apps-deployment/SKILL.md) before generating infrastructure.** It covers critical gotchas with ACR authentication, zone redundancy, azure.yaml configuration, and SPA frontend deployment that apply to this deployment.
+> **📖 Read the [`container-apps-deployment` skill](../.github/skills/container-apps-deployment/SKILL.md) before generating infrastructure.** It covers critical gotchas with ACR authentication, zone redundancy, azure.yaml configuration, and SPA frontend deployment that apply to this deployment.
 
 ### Azure Skills Plugin
 
@@ -600,7 +600,7 @@ The Azure Skills plugin for GitHub Copilot provides MCP tools and plugin skills 
 ### Containerization
 
 - **API Dockerfile:** Multi-stage build for your language. Builder stage compiles, final stage runs production artifacts only. Include `.dockerignore` to exclude dependency directories and db files.
-- **Client Dockerfile:** Multi-stage `node:24-alpine` → `nginx:alpine`. Use `FROM --platform=$BUILDPLATFORM node:24-alpine` for the static build stage so esbuild runs natively on ARM64 hosts; target `linux/amd64` only for the nginx runtime image. Accept `VITE_API_URL` before `npm run build`. Serve with `nginx.conf` using `try_files` for SPA routing. **No `/api/` proxy block** — the frontend calls the API directly via `VITE_API_URL`.
+- **Client Dockerfile:** Multi-stage `node:24-alpine` → `nginx:alpine`. Azure Container Registry builds the image as `linux/amd64`, so the Dockerfile must not require host-specific Buildx variables. Accept `VITE_API_URL` before `npm run build`. Serve with `nginx.conf` using `try_files` for SPA routing. **No `/api/` proxy block** — the frontend calls the API directly via `VITE_API_URL`.
 - **`.dockerignore`:** Both directories must exclude dependency dirs, build output, and `.env`.
 
 ### Azure Resources
@@ -637,6 +637,6 @@ Prefer **Azure Verified Modules (AVM)** from `br/public:avm/...` for all resourc
 ### Deployment
 
 1. Read the subscription with `az account show --query id -o tsv`, set `AZURE_SUBSCRIPTION_ID` to that value, then run `azd up`.
-2. **Required postdeploy hook:** Generate `infra/hooks/postdeploy.js` and reference it directly from `azure.yaml` without `shell: sh`. The JavaScript hook uses `child_process` argument arrays to rebuild the web image with `VITE_API_URL=<API_URL>/api`, target `linux/amd64`, push to ACR, and update the web Container App. First-time success must not require a manual rebuild.
-3. **Any ARM64 host:** Prefer a remote ACR AMD64 build. If building locally, verify emulation during preflight and use `$BUILDPLATFORM` for the static frontend build stage. Never install privileged binfmt/QEMU handlers automatically.
+2. **Required postdeploy hook:** Generate `infra/hooks/postdeploy.js` and reference it directly from `azure.yaml` without `shell: sh`. The JavaScript hook must invoke `az acr build` with argument arrays to build the web image in Azure with `VITE_API_URL=<API_URL>/api` and `--platform linux/amd64`, then update the web Container App. First-time success must not require Docker or a manual rebuild on the host.
+3. **All host architectures:** Build both deployment images in Azure Container Registry. Do not require Docker, Buildx, emulation, or privileged binfmt/QEMU handlers on the host.
 4. Set `DATA_PROVIDER=cosmos` or `DATA_PROVIDER=postgres` to switch from SQLite to a cloud database

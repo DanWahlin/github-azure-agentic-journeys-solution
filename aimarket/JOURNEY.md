@@ -25,11 +25,10 @@ In this agentic journey, you'll build AIMarket, a lightweight marketplace app wi
 >
 > - Azure CLI, Azure Developer CLI 1.28.0+, and an agentic coding tool
 > - Node.js 24 LTS or later for the frontend, cross-platform hooks, and default API stack
-> - Docker with a running daemon and Buildx for image builds
 > - GitHub CLI (`gh`) for the repository and issue workflow in Phases 2–3
 > - The selected API runtime if you choose Python 3.10+, .NET 8+, or Java 17+ instead of Node.js
 >
-> Run `node --version`, `docker version`, `docker buildx version`, and `gh auth status` before starting. See the [cross-platform installation guide](../../docs/tool-installation.md) for Windows, macOS, and Linux options.
+> Run `az version`, `azd version`, `node --version`, and `gh auth status` before starting. Deployment images build in Azure Container Registry; the host does not need Docker or Buildx. See the [cross-platform installation guide](../docs/tool-installation.md) for Windows, macOS, and Linux options.
 
 > [!NOTE]
 > Use [GitHub Copilot CLI](https://github.com/features/copilot/cli), the [GitHub Copilot app](https://github.com/features/ai/github-app), or another agentic coding tool. For other tools, run: **"Copy or adapt this repository's `.github/skills` into your supported skills or instructions location, preserving their behavior and reporting anything unsupported."**
@@ -154,7 +153,7 @@ Start GitHub Copilot. Examples use the [GitHub Copilot CLI](https://docs.github.
 copilot
 ```
 
-If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../../README.md#quick-start)):
+If you haven't installed the Azure Skills plugin yet, do it now — it's a one-time setup that adds deployment tools, Bicep schema lookups, and infrastructure generation (details in the root [Quick Start](../README.md#quick-start)):
 
 ```
 > /plugin marketplace add microsoft/azure-skills
@@ -516,7 +515,7 @@ The Phase 4 spec in PLAN.md and the `container-apps-deployment` skill already co
 
 ```
 > Read the Phase 4 section in PLAN.md and the container-apps-deployment skill
-  at ../../.github/skills/container-apps-deployment/SKILL.md. Following the
+  at ../.github/skills/container-apps-deployment/SKILL.md. Following the
   Containerization, Azure Resources, Bicep Requirements, and Deployment
   sections exactly, create everything needed to deploy AIMarket to Azure
   Container Apps: Bicep in infra/, Dockerfiles with .dockerignore files for
@@ -533,7 +532,7 @@ The Phase 4 spec in PLAN.md and the `container-apps-deployment` skill already co
 4. Open `client/nginx.conf`. Does it ONLY have `try_files` for SPA routing? No `/api/` proxy block. (With public ingress on Container Apps, each service has its own URL, so nginx proxying to `aimarket-api` will crash because that hostname doesn't resolve.)
 5. Open `client/.dockerignore`. Does it exclude dependency directories (`node_modules/`, `.git/`)? Without this, the Docker build context is huge and may fail.
 6. Open `api/.dockerignore`. Make sure it does NOT exclude build config files like `tsconfig.json`. The Docker build needs them to compile.
-7. Open `client/Dockerfile`. Does the builder use `$BUILDPLATFORM`, and are `ARG VITE_API_URL` and `ENV VITE_API_URL=$VITE_API_URL` **before** `npm run build`?
+7. Open `client/Dockerfile`. Is it compatible with an ACR `linux/amd64` cloud build, and are `ARG VITE_API_URL` and `ENV VITE_API_URL=$VITE_API_URL` **before** `npm run build`?
 8. Do both Container Apps use system-assigned identity, an `AcrPull` assignment, and an explicit ACR registry entry using `identity: system` before a private image is deployed?
 9. Does `azure.yaml` define `hooks.postdeploy` → `infra/hooks/postdeploy.js` without `shell: sh`? Without this, the storefront will load HTML but products will fail.
 
@@ -569,7 +568,7 @@ The **postdeploy hook** should have rebuilt the web image with `VITE_API_URL=<AP
 <details>
 <summary>Manual fallback: run the portable frontend hook</summary>
 
-A filtered `azd deploy web` can skip project-level postdeploy hooks. Run the JavaScript hook directly instead:
+For a storefront-only rebuild, run the JavaScript hook directly:
 
 ```text
 node infra/hooks/postdeploy.js
@@ -719,8 +718,8 @@ az provider register --namespace Microsoft.OperationalInsights
 **Build context too large:**
 Check that `client/.dockerignore` and `api/.dockerignore` exclude `node_modules/`, `.git/`, and build output directories.
 
-**Wrong image platform on an ARM64 host:**
-Prefer a remote ACR build for `linux/amd64`. If building locally, verify Buildx and AMD64 emulation during preflight, keep the static frontend builder on `$BUILDPLATFORM`, and target `linux/amd64` for runtime images. Never install privileged QEMU/binfmt automatically.
+**Wrong image platform:**
+Require the postdeploy hook to pass `--platform linux/amd64` to `az acr build`. Do not fall back to a local cross-build.
 
 **Frontend can't find the API (`VITE_API_URL` not set):**
 The `ARG VITE_API_URL` line must come BEFORE the `npm run build` step in `client/Dockerfile`. If it's after, the build arg is silently ignored.
@@ -777,7 +776,7 @@ Explore the other journeys:
 - [SmartTodo](../smart-todo/README.md) — Azure Functions Flex Consumption, Azure SQL, SwiftUI, and Foundry task breakdown (macOS for the iOS phase)
 - [Grafana](../grafana/README.md) and [n8n](../n8n/README.md) — quick OSS deploys to Container Apps
 
-> 📚 **All journeys:** [Back to root README](../../README.md#agentic-journeys)
+> 📚 **All journeys:** [Back to root README](../README.md#agentic-journeys)
 
 ---
 

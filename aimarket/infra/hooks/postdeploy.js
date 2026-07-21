@@ -3,11 +3,10 @@
  *
  * The React storefront needs the API's public URL baked in at BUILD time
  * (Vite inlines `VITE_API_URL`). The API URL is not known until after
- * provisioning, so azd's initial `web` image is built with the default
- * `/api` base and cannot reach the API. This hook rebuilds the web image
- * with the real `VITE_API_URL=<API_URL>/api` via a local buildx build
- * (native builder stage through $BUILDPLATFORM + COPY-only final stage, so no
- * QEMU emulation is needed to target linux/amd64), pushes it to ACR, updates
+ * provisioning. Bicep creates the web Container App with a public placeholder
+ * image. This hook builds the production web image
+ * with the real `VITE_API_URL=<API_URL>/api` through an Azure Container
+ * Registry cloud build, pushes it to ACR, updates
  * the web Container App, waits for the new revision, and verifies the
  * production storefront references the API host.
  *
@@ -15,8 +14,8 @@
  * interpolation). Path handling, retries, timestamps and JSON parsing are
  * done in JavaScript so the hook works on Windows, macOS and Linux.
  *
- * A filtered deploy (`azd deploy web`) can skip project-level hooks; run this
- * file directly afterwards:  node infra/hooks/postdeploy.js
+ * For a storefront-only rebuild, run this file directly:
+ * node infra/hooks/postdeploy.js
  */
 'use strict';
 
@@ -110,23 +109,15 @@ async function main() {
   const imageRef = `${acrLoginServer}/aimarket-web:${tag}`;
 
   console.log(`[postdeploy] Rebuilding storefront with VITE_API_URL=${viteApiUrl}`);
-  console.log(`[postdeploy] Local buildx (linux/amd64, native builder stage) -> ${imageRef}`);
+  console.log(`[postdeploy] ACR cloud build (linux/amd64) -> ${imageRef}`);
 
-  // ACR's classic build task cannot parse the BuildKit `FROM --platform=$BUILDPLATFORM`
-  // line, so the web image is built locally with buildx. The builder stage runs
-  // natively on the host arch via $BUILDPLATFORM (esbuild/Vite never emulated) and
-  // the final nginx stage is COPY-only, so producing a linux/amd64 image needs NO
-  // privileged QEMU emulation. Provenance/attestation is disabled for a clean
-  // single-arch manifest that Azure Container Apps can pull directly.
-  run('az', ['acr', 'login', '--name', acrName]);
-  run('docker', [
-    'buildx', 'build',
+  run('az', [
+    'acr', 'build',
+    '--registry', acrName,
+    '--image', `aimarket-web:${tag}`,
     '--platform', 'linux/amd64',
-    '--provenance=false',
     '--build-arg', `VITE_API_URL=${viteApiUrl}`,
     '--file', 'Dockerfile',
-    '--tag', imageRef,
-    '--push',
     '.',
   ], { cwd: CLIENT_DIR });
 

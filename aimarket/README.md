@@ -2,7 +2,7 @@
 
 Deploy the AIMarket API and storefront with Azure Container Apps, Azure Container Registry, Azure AI Search, and Microsoft Foundry.
 
-Install Node.js 24+ and Docker with Buildx. Docker must be running because the post-deploy hook builds and pushes the storefront image.
+Install Node.js 24+. Azure Container Registry builds both application images in Azure.
 
 Run all deployment commands from the `aimarket` directory.
 
@@ -10,8 +10,6 @@ Run all deployment commands from the `aimarket` directory.
 
 ```text
 cd aimarket
-docker version
-docker buildx version
 az account show --query id --output tsv
 azd env new aimarket-dev
 azd env set AZURE_SUBSCRIPTION_ID <subscription-id>
