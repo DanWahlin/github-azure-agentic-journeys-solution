@@ -77,8 +77,8 @@ Journey-specific minimums:
 |---|---|---|
 | Grafana | None | Playwright for screenshots |
 | n8n | Node.js 24 LTS or later | Playwright for screenshots |
-| Superset | Node.js 24 LTS or later, `kubectl`, Helm 3 | Playwright for screenshots |
-| AIMarket | Node.js 24 LTS or later, Docker CLI and running daemon, GitHub CLI | Playwright; local AMD64 emulation only when remote builds are unavailable |
+| Superset | Node.js 24 LTS or later | Playwright for screenshots; local `kubectl` and Helm are optional diagnostics only |
+| AIMarket | Node.js 24 LTS or later, GitHub CLI | Playwright for screenshots |
 | SmartTodo | Node.js 24 LTS or later, Azure Functions Core Tools v4, `sqlcmd` | Project-local Azurite for local execution; Docker for alternate stacks or local SQL; Xcode 16+ only for macOS iOS execution |
 
 ### Authentication preflight

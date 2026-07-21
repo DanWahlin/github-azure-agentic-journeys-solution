@@ -205,22 +205,12 @@ azd down --force --purge
 
 ## Verification
 
-After deployment completes:
+After deployment, run the checked-in verifier from the Superset directory:
 
 ```text
-# 1. Check pod status (expected: 1/1 Running)
-kubectl get pods -n superset
-
-# 2. Print init logs and confirm they contain "Context impl PostgresqlImpl"
-kubectl logs -n superset <pod> -c superset-init
-
-# 3. Verify psycopg2 installed
-kubectl exec -n superset <pod> -c superset -- python -c "import psycopg2; print('OK')"
-
-# 4. Get the ingress IP, copy it, and test the endpoints
-kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}"
-curl -I http://<external-ip>/health
-curl -I http://<external-ip>/login/
+node scripts/verify-superset.mjs
 ```
+
+The verifier reads the selected azd environment and passes pod, log, `psycopg2`, and ingress checks to `az aks command invoke`. It must require an explicit successful remote exit code and HTTP 200 from `/health`; it must not invoke host `kubectl` or Helm.
 
 For automated browser login, use `#username`, `#password`, and the resilient submit selector `input[type="submit"], button[type="submit"]`. Superset 4.1.1 renders a Flask-AppBuilder submit input; other versions may render a button. Verify successful navigation to `/superset/welcome/`.

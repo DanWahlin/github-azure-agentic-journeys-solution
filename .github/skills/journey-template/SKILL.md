@@ -38,7 +38,7 @@ Update root `README.md` learning path + journey table when adding a journey.
 ## Output Structure
 
 ```
-journeys/<app-name>/
+<app-name>/
 ├── README.md          # Learner-facing walkthrough
 ├── PLAN.md            # AI-readable spec (full-stack journeys only)
 └── images/            # Generated images (added separately)
@@ -92,7 +92,7 @@ For AKS-based apps (like Superset), also include:
 
 ## README.md Template
 
-Every journey README MUST follow this exact structure. Reference `journeys/aimarket/README.md` for a full-stack example and `journeys/n8n/README.md` for an OSS deployment example.
+Every learner journey MUST follow this exact structure. Reference `aimarket/JOURNEY.md` for a full-stack example and `n8n/JOURNEY.md` for an OSS deployment example.
 
 ### Required Sections (in order)
 
@@ -322,7 +322,7 @@ Use consistently throughout all journeys:
 
 ## PLAN.md Template (Full-Stack Journeys Only)
 
-The PLAN.md is a spec document that GitHub Copilot reads to generate code. It is NOT tutorial content. Add a note at the top: "This is a spec for AI agents. You don't need to read it — GitHub Copilot will." Reference `journeys/aimarket/PLAN.md` for the complete example.
+The PLAN.md is a spec document that GitHub Copilot reads to generate code. It is NOT tutorial content. Add a note at the top: "This is a spec for AI agents. You don't need to read it — GitHub Copilot will." Reference `aimarket/PLAN.md` for the complete example.
 
 ### Required Sections
 
@@ -546,7 +546,7 @@ AKS-specific infrastructure needs:
 - **Node pool sizing**: D2s_v3 (2 vCores, 8GB) is the minimum practical size (~$85/month each)
 - **Standard Load Balancer**: required for public access (~$18/month)
 - **Kubernetes manifests**: Deployment, Service, ConfigMap, Secret
-- **kubectl verification**: `kubectl get pods`, `kubectl logs`, `kubectl port-forward`
+- **AKS run-command verification**: pass `kubectl` commands to `az aks command invoke`; do not require local `kubectl`
 - **Init containers**: for database migrations (e.g., `superset db upgrade`)
 
 ### Cross-Platform Post-Provision Hooks
